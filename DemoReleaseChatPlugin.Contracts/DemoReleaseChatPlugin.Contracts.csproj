@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    netstandard2.0 and dependency-free on purpose: other applications reference this package,
+    some of them on .NET Framework, and taking it must never drag in Core, EF Core or anything else.
+    LangVersion is pinned because netstandard2.0 otherwise defaults to C# 7.3.
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <RootNamespace>DemoReleaseChatPlugin.Contracts</RootNamespace>
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+</Project>

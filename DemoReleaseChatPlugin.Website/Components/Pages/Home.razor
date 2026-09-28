@@ -1,0 +1,18 @@
+@page "/"
+
+<PageHeader Text="DemoReleaseChatPlugin" Description="Release management" />
+
+<RadzenText TextStyle="TextStyle.Body1">
+    Use the menu to file release notices, manage projects and stakeholder groups, or administer
+    users and roles.
+</RadzenText>
+
+<AuthorizeView Roles="@DemoReleaseChatPlugin.Application.Authorization.RoleConstants.ItAdmin">
+    <NotAuthorized>
+        <Spacer />
+        <RadzenAlert AlertStyle="AlertStyle.Info" ShowIcon="true" AllowClose="false">
+            Your account has no roles yet, so the Releases and Administration sections are hidden.
+            Ask an IT administrator to grant you a role, then sign out and back in.
+        </RadzenAlert>
+    </NotAuthorized>
+</AuthorizeView>

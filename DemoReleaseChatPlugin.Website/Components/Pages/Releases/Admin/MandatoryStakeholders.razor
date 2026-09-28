@@ -1,0 +1,86 @@
+@page "/releases/admin/mandatory-stakeholders"
+@using DemoReleaseChatPlugin.Application.Authorization
+@using DemoReleaseChatPlugin.Application.Releases.StakeholderGroups
+@attribute [Authorize(Roles = RoleConstants.ItAdmin)]
+@inherits MandatoryStakeholdersBase
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center"
+                 JustifyContent="JustifyContent.SpaceBetween">
+        <h4 class="mb-0">Mandatory stakeholders</h4>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+            <RadzenSwitch Value="@ShowInactive" TValue="bool"
+                          Change="@(async v => await OnShowInactiveChanged(v))" Name="showInactive" />
+            <RadzenLabel Text="Show inactive" Component="showInactive" />
+            <RadzenButton Icon="group_add" Text="Add" ButtonStyle="ButtonStyle.Primary" Click="AddGroupAsync" />
+        </RadzenStack>
+    </RadzenStack>
+
+    <RadzenFieldset Text="Stakeholder groups">
+        <RadzenDataGrid Data="@Groups" TItem="StakeholderGroupDto" IsLoading="@IsBusy"
+                        ColumnWidth="100%" AllowSorting="true" AllowColumnResize="true"
+                        ExpandMode="DataGridExpandMode.Multiple"
+                        GridLines="DataGridGridLines.Horizontal" Style="max-height: 65vh"
+                        EmptyText="No mandatory stakeholder groups yet. Until one is added, scheduling a release notifies nobody.">
+            <Template Context="group">
+                @* The row expands into a nested grid of that group's stakeholders. *@
+                <RadzenDataGrid Data="@group.Stakeholders" TItem="GroupStakeholderDto" ColumnWidth="100%"
+                                AllowSorting="true" GridLines="DataGridGridLines.Horizontal"
+                                EmptyText="Nobody in this group yet.">
+                    <Columns>
+                        <RadzenDataGridColumn TItem="GroupStakeholderDto" Property="Name" Title="Name" />
+                        <RadzenDataGridColumn TItem="GroupStakeholderDto" Property="Email" Title="Email" />
+                        <RadzenDataGridColumn TItem="GroupStakeholderDto" Title="Status" Width="110px" Sortable="false">
+                            <Template Context="person">
+                                @if (person.IsActive)
+                                {
+                                    <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="Active" />
+                                }
+                                else
+                                {
+                                    <RadzenBadge BadgeStyle="BadgeStyle.Light" Text="Inactive" />
+                                }
+                            </Template>
+                        </RadzenDataGridColumn>
+                    </Columns>
+                </RadzenDataGrid>
+            </Template>
+            <Columns>
+
+                <RadzenDataGridColumn TItem="StakeholderGroupDto" Property="Name" Title="Group" />
+
+                <RadzenDataGridColumn TItem="StakeholderGroupDto" Property="Description" Title="Description" />
+
+                <RadzenDataGridColumn TItem="StakeholderGroupDto" Title="People" Width="110px"
+                                      TextAlign="TextAlign.Center" Sortable="false">
+                    <Template Context="group">@group.StakeholderSummary</Template>
+                </RadzenDataGridColumn>
+
+                <RadzenDataGridColumn TItem="StakeholderGroupDto" Title="Status" Width="110px" Sortable="false">
+                    <Template Context="group">
+                        @if (group.IsActive)
+                        {
+                            <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="Active" />
+                        }
+                        else
+                        {
+                            <RadzenBadge BadgeStyle="BadgeStyle.Light" Text="Inactive" />
+                        }
+                    </Template>
+                </RadzenDataGridColumn>
+
+                <RadzenDataGridColumn TItem="StakeholderGroupDto" Title="Actions" Width="120px" Sortable="false">
+                    <Template Context="group">
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+                            <RadzenButton Text="Manage" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small"
+                                          Click="@(() => ManageGroupAsync(group))" />
+                        </RadzenStack>
+                    </Template>
+                </RadzenDataGridColumn>
+
+            </Columns>
+        </RadzenDataGrid>
+    </RadzenFieldset>
+
+</RadzenStack>

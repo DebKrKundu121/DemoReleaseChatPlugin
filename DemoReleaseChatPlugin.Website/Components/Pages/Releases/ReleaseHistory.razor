@@ -1,0 +1,26 @@
+@page "/releases"
+@page "/releases/history"
+@using DemoReleaseChatPlugin.Application.Authorization
+@using DemoReleaseChatPlugin.Website.Components.Pages.Releases.Components
+@attribute [Authorize(Roles = RoleConstants.ItAdmin)]
+@inherits ReleaseHistoryBase
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center"
+                 JustifyContent="JustifyContent.SpaceBetween">
+        <h4 class="mb-0">Release history</h4>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+            <RadzenButton Icon="event_upcoming" Text="Schedule release"
+                          ButtonStyle="ButtonStyle.Primary" Click="GoToSchedule" />
+            <RadzenButton Icon="publish" Text="Record go-live"
+                          ButtonStyle="ButtonStyle.Success" Click="GoToRecordLive" />
+        </RadzenStack>
+    </RadzenStack>
+
+    <ReleaseHistoryGrid IsBusy="IsBusy" Notices="Notices"
+                        NoticeSelected="ShowDetailsAsync"
+                        GoLiveRequested="RecordGoLiveFrom"
+                        RollbackRequested="RollBack" />
+
+</RadzenStack>

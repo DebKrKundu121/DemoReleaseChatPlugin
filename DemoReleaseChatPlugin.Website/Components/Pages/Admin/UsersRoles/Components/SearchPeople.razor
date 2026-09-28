@@ -1,0 +1,44 @@
+@using DemoReleaseChatPlugin.Application.Entra
+@inherits SearchPeopleBase
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+
+    <RadzenText TextStyle="TextStyle.Body2">
+        Search staff by name (or email), select a person, then create or manage their user.
+    </RadzenText>
+
+    <RadzenDropDown AllowClear="true" AllowFiltering="true" TValue="string" Style="width:50%"
+                    Data="@People" TextProperty="Name" ValueProperty="Id"
+                    LoadData="@OnLoadData" Change="@(_ => OnChange())" @bind-Value="SelectedId"
+                    Placeholder="Type a name..." FilterDelay="300"
+                    FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive" />
+
+    @if (SelectedPerson is not null)
+    {
+        <RadzenCard>
+            <PersonDetailsCard ExternalId="@SelectedPerson.Id" />
+        </RadzenCard>
+
+        <RadzenCard>
+            <RadzenText TextStyle="TextStyle.H6">Available options</RadzenText>
+            <Loader IsReady="@(!IsLoadingOptions && Options is not null)">
+                @if (Options is not null && Options.CanCreateUser)
+                {
+                    <RadzenButton Text="Create user" Icon="person_add"
+                                  ButtonStyle="ButtonStyle.Primary" Click="CreateUser" />
+                }
+                else if (Options is not null && Options.CanManageUser)
+                {
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+                        <RadzenText TextStyle="TextStyle.Body2">This person is already a user.</RadzenText>
+                        <div>
+                            <RadzenButton Text="Manage user" Icon="manage_accounts"
+                                          ButtonStyle="ButtonStyle.Secondary" Click="ManageUser" />
+                        </div>
+                    </RadzenStack>
+                }
+            </Loader>
+        </RadzenCard>
+    }
+
+</RadzenStack>

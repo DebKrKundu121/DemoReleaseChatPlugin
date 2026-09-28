@@ -1,0 +1,25 @@
+@if (IsVisible)
+{
+    @if (IsReady)
+    {
+        @ChildContent
+    }
+    else
+    {
+        <RadzenStack Orientation="Orientation.Vertical" AlignItems="AlignItems.Center"
+                     JustifyContent="JustifyContent.Center" Gap="0.5rem" class="m-3">
+            <RadzenProgressBarCircular ProgressBarStyle="ProgressBarStyle.Primary" Value="100"
+                                       ShowValue="false" Mode="ProgressBarMode.Indeterminate"
+                                       Size="@Size" />
+            <RadzenText TextStyle="TextStyle.Caption">@WithMessage</RadzenText>
+        </RadzenStack>
+    }
+}
+
+@code {
+    [Parameter] public bool IsVisible { get; set; } = true;
+    [Parameter] public bool IsReady { get; set; }
+    [Parameter] public string WithMessage { get; set; } = "Wait";
+    [Parameter] public ProgressBarCircularSize Size { get; set; } = ProgressBarCircularSize.Medium;
+    [Parameter] public RenderFragment ChildContent { get; set; }
+}

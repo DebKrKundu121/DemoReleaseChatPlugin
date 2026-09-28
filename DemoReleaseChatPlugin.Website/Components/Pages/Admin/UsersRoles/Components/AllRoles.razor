@@ -1,0 +1,38 @@
+@using DemoReleaseChatPlugin.Application.Authorization.GetRolesWithUsers
+@inherits AllRolesBase
+
+<RadzenDataGrid Data="@Roles" TItem="GetRolesWithUsersResult.RoleDto" IsLoading="@IsBusy"
+                ColumnWidth="100%" AllowFiltering="true" AllowColumnResize="true" AllowSorting="true"
+                FilterMode="FilterMode.SimpleWithMenu"
+                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                LogicalFilterOperator="LogicalFilterOperator.And"
+                GridLines="DataGridGridLines.Horizontal" Style="max-height: 65vh"
+                EmptyText="No roles found.">
+    <Columns>
+
+        <RadzenDataGridColumn TItem="GetRolesWithUsersResult.RoleDto" Property="Name" Title="Name" Width="180px" />
+
+        <RadzenDataGridColumn TItem="GetRolesWithUsersResult.RoleDto" Property="Description" Title="Description" />
+
+        <RadzenDataGridColumn TItem="GetRolesWithUsersResult.RoleDto" Title="Users"
+                              Sortable="false" Filterable="false">
+            <Template Context="data">
+                @if (data.Users.Count == 0)
+                {
+                    <RadzenText TextStyle="TextStyle.Caption" class="mb-0">No users</RadzenText>
+                }
+                else
+                {
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" Wrap="FlexWrap.Wrap">
+                        @foreach (var user in data.Users)
+                        {
+                            <span style="cursor:pointer; color:var(--rz-primary); text-decoration:underline"
+                                  @onclick="() => ManageUser(user.Id)">@user.Name</span>
+                        }
+                    </RadzenStack>
+                }
+            </Template>
+        </RadzenDataGridColumn>
+
+    </Columns>
+</RadzenDataGrid>

@@ -1,0 +1,18 @@
+@inherits DeleteUserBase
+
+@* A confirmation checkbox rather than a confirm dialog: the destructive tab is already an explicit
+   navigation, and the checkbox keeps the consequence on screen while you decide. *@
+<RadzenStack Orientation="Orientation.Vertical" Gap="0.75rem">
+    <RadzenText TextStyle="TextStyle.Body2">
+        Removing @UserName deletes their role assignments. They lose any access those roles grant at
+        their next sign-in.
+    </RadzenText>
+
+    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+        <RadzenCheckBox @bind-Value="IsActionConfirmed" TValue="bool" Name="confirmDelete" />
+        <RadzenLabel Text="I understand this action and wish to continue." Component="confirmDelete" />
+    </RadzenStack>
+</RadzenStack>
+<Spacer/>
+<RadzenButton ButtonStyle="ButtonStyle.Danger" Text="Delete user"
+              Disabled="@(!IsActionConfirmed)" Click="DeleteUser" />

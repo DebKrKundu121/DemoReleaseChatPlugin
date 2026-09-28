@@ -1,0 +1,34 @@
+@inherits PersonDetailsCardBase
+
+<Loader IsReady="Loaded">
+    @if (Details.HasNoValue)
+    {
+        @* Normal for a person who has left, whose ExternalId is still on file. *@
+        <RadzenText TextStyle="TextStyle.Body2">Directory details not found for this person.</RadzenText>
+    }
+    else
+    {
+        <div class="row">
+            <div class="col-md-3 text-center">
+                <img src="@Person.ImageSrc" alt="@Person.Name" class="rounded-circle"
+                     width="120" height="120" style="object-fit:cover" />
+            </div>
+            <div class="col-md-9">
+                <div class="row">
+                    <div class="col-sm-6"><strong>Full name:</strong> @Person.Name</div>
+                    <div class="col-sm-6"><strong>Email:</strong> @Person.Email</div>
+                    <div class="col-sm-6"><strong>Business phones:</strong> @Person.BusinessPhones</div>
+                    <div class="col-sm-6"><strong>Mobile phone:</strong> @Person.MobilePhone</div>
+                    <div class="col-sm-6"><strong>Job title:</strong> @Person.JobTitle</div>
+                    <div class="col-sm-6">
+                        <strong>Manager:</strong>
+                        @(Person.MaybeManager.HasValue ? Person.MaybeManager.Value.Name : "N/A")
+                    </div>
+                    <div class="col-sm-6"><strong>Department:</strong> @Person.Department</div>
+                    <div class="col-sm-6"><strong>Company:</strong> @Person.CompanyName</div>
+                    <div class="col-sm-12"><strong>Azure ID:</strong> @Person.Id</div>
+                </div>
+            </div>
+        </div>
+    }
+</Loader>

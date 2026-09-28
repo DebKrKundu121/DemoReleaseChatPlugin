@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    A stand-in for the internal DoverPort.Common.Pipeline package: AddPodPipeline() and the mediator
+    pipeline behaviours it registers (validation, logging, health checks).
+
+    This is the half of the old shared project that genuinely needs ASP.NET Core - AddPodPipeline
+    maps health-check endpoints. Keeping it apart from Common.Models is what lets the domain
+    reference the models without dragging the web stack in behind them.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>DoverPort.Common.Pipeline</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="12.1.1" />
+    <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
+    <PackageReference Include="Mediator.Abstractions" Version="3.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\DoverPort.Common.Models\DoverPort.Common.Models.csproj" />
+  </ItemGroup>
+
+  <!--
+    NU1510 fires for the Microsoft.Extensions.* references: this shim carries a FrameworkReference
+    the real DoverPort packages did not, so ASP.NET Core's shared framework already supplies those
+    assemblies and the explicit references are redundant AT RUNTIME. They are kept because the
+    package list is the one the spec enumerates. Silencing the note so a real warning stays visible.
+  -->
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1510</NoWarn>
+  </PropertyGroup>
+
+</Project>

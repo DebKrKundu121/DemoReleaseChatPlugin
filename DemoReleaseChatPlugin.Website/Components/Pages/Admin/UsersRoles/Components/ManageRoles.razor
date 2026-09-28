@@ -1,0 +1,25 @@
+@inherits ManageRolesBase
+
+<Loader IsReady="Command is not null">
+    <EditForm Model="@Command" OnSubmit="@Submit">
+        <FluentValidationValidator @ref="Validator" />
+        <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+            @foreach (var role in Command.Roles)
+            {
+                <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center"
+                             JustifyContent="JustifyContent.SpaceBetween" Gap="1rem">
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="0">
+                        <RadzenText TextStyle="TextStyle.Body1" class="mb-0">@role.Name</RadzenText>
+                        @* The role's Description is shown under its name - that is the whole reason
+                           Roles.Description exists as a column. *@
+                        <RadzenText TextStyle="TextStyle.Caption">@role.Description</RadzenText>
+                    </RadzenStack>
+                    <RadzenSwitch @bind-Value="role.IsAssigned" />
+                </RadzenStack>
+                <hr />
+            }
+        </RadzenStack>
+        <ValidationSummary />
+        <RadzenButton ButtonType="ButtonType.Submit" Text="Save" Icon="save" ButtonStyle="ButtonStyle.Primary" />
+    </EditForm>
+</Loader>

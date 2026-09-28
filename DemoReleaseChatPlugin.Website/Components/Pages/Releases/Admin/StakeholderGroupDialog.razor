@@ -1,0 +1,260 @@
+@using DemoReleaseChatPlugin.Application.Entra
+@using DemoReleaseChatPlugin.Application.Releases.StakeholderGroups
+@using DemoReleaseChatPlugin.Application.Releases.StakeholderGroups.CreateStakeholderGroup
+@inherits StakeholderGroupDialogBase
+
+@if (!IsManaging)
+{
+    @* ---------------------------------- CREATE MODE ---------------------------------- *@
+    <EditForm Model="@CreateCommand" OnSubmit="@SubmitCreateAsync"
+              onkeypress="return event.keyCode != 13 || event.target.tagName == 'TEXTAREA'">
+        <FluentValidationValidator @ref="CreateValidator" />
+
+        <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+
+            <RadzenFieldset Text="Group">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="0.75rem">
+                    <div>
+                        <RadzenLabel Text="Name" />
+                        <div>
+                            <RadzenTextBox @bind-Value="CreateCommand.Name" Style="max-width:420px; width:100%"
+                                           Placeholder="e.g. Business Owners" />
+                        </div>
+                        <ValidationMessage For="@(() => CreateCommand.Name)" />
+                    </div>
+                    <div>
+                        <RadzenLabel Text="Description" />
+                        <div>
+                            <RadzenTextArea @bind-Value="CreateCommand.Description" Rows="2"
+                                            Style="max-width:560px; width:100%" />
+                        </div>
+                        <ValidationMessage For="@(() => CreateCommand.Description)" />
+                    </div>
+                </RadzenStack>
+            </RadzenFieldset>
+
+            <RadzenFieldset Text="Stakeholders">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+
+                    <RadzenText TextStyle="TextStyle.Caption">
+                        Start typing a name to pick a member of staff and fill in their email, or type
+                        both in for anyone outside the organisation.
+                    </RadzenText>
+
+                    @foreach (var row in CreateCommand.Stakeholders)
+                    {
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+                            <RadzenAutoComplete @bind-Value="row.Name" Data="@People" TextProperty="Name"
+                                                LoadData="@SearchPeopleAsync" MinLength="2" FilterDelay="300"
+                                                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                                Change="@(person => PickPerson(row, person))"
+                                                Style="width:240px" Placeholder="Name" />
+                            <RadzenTextBox @bind-Value="row.Email" Style="width:300px" Placeholder="Email" />
+                            <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                                          ButtonType="ButtonType.Button"
+                                          Disabled="@(CreateCommand.Stakeholders.Count <= 1)"
+                                          Click="@(() => RemoveRow(row))" />
+                        </RadzenStack>
+                    }
+
+                    <div>
+                        <RadzenButton Text="Add another" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                                      ButtonType="ButtonType.Button" Click="AddRow" />
+                    </div>
+
+                    <ValidationMessage For="@(() => CreateCommand.Stakeholders)" />
+
+                </RadzenStack>
+            </RadzenFieldset>
+
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" JustifyContent="JustifyContent.End">
+                <RadzenButton ButtonType="ButtonType.Button" Text="Cancel" ButtonStyle="ButtonStyle.Light"
+                              Click="Close" />
+                <RadzenButton ButtonType="ButtonType.Submit" Text="Create group" ButtonStyle="ButtonStyle.Primary" />
+            </RadzenStack>
+
+        </RadzenStack>
+    </EditForm>
+}
+else
+{
+    @* ---------------------------------- MANAGE MODE ---------------------------------- *@
+    <Loader IsReady="@(Group is not null && EditCommand is not null)">
+        <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+
+            <RadzenFieldset Text="Details">
+                <EditForm Model="@EditCommand" OnSubmit="@SubmitEditAsync"
+                          onkeypress="return event.keyCode != 13 || event.target.tagName == 'TEXTAREA'">
+                    <FluentValidationValidator @ref="EditValidator" />
+
+                    <RadzenStack Orientation="Orientation.Vertical" Gap="0.75rem">
+
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+                            @if (Group.IsActive)
+                            {
+                                <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="Active" />
+                            }
+                            else
+                            {
+                                <RadzenBadge BadgeStyle="BadgeStyle.Light" Text="Inactive" />
+                            }
+                            @if (Group.IsMandatory)
+                            {
+                                <RadzenBadge BadgeStyle="BadgeStyle.Info" Text="Mandatory" />
+                            }
+                        </RadzenStack>
+
+                        <div>
+                            <RadzenLabel Text="Name" />
+                            <div><RadzenTextBox @bind-Value="EditCommand.Name" Style="max-width:420px; width:100%" /></div>
+                            <ValidationMessage For="@(() => EditCommand.Name)" />
+                        </div>
+
+                        <div>
+                            <RadzenLabel Text="Description" />
+                            <div>
+                                <RadzenTextArea @bind-Value="EditCommand.Description" Rows="2"
+                                                Style="max-width:560px; width:100%" />
+                            </div>
+                            <ValidationMessage For="@(() => EditCommand.Description)" />
+                        </div>
+
+                        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+                            <RadzenButton ButtonType="ButtonType.Submit" Text="Save details"
+                                          ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small" />
+                            @if (Group.IsActive)
+                            {
+                                <RadzenButton ButtonType="ButtonType.Button" Text="Deactivate group"
+                                              ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small"
+                                              Click="@(() => SetGroupActiveAsync(false))" />
+                            }
+                            else
+                            {
+                                <RadzenButton ButtonType="ButtonType.Button" Text="Reactivate group"
+                                              ButtonStyle="ButtonStyle.Success" Size="ButtonSize.Small"
+                                              Click="@(() => SetGroupActiveAsync(true))" />
+                            }
+                        </RadzenStack>
+
+                    </RadzenStack>
+                </EditForm>
+            </RadzenFieldset>
+
+            <RadzenFieldset Text="Stakeholders">
+                <RadzenStack Orientation="Orientation.Vertical" Gap="0.5rem">
+
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem"
+                                 AlignItems="AlignItems.Center" JustifyContent="JustifyContent.SpaceBetween">
+                        <RadzenText TextStyle="TextStyle.Caption" class="mb-0">
+                            Start typing a name to pick a member of staff and fill in their email, or type
+                            both in for anyone outside the organisation.
+                        </RadzenText>
+                        <RadzenButton Icon="person_add" Text="Add" ButtonStyle="ButtonStyle.Primary"
+                                      Size="ButtonSize.Small" Disabled="@IsEditingStakeholder"
+                                      Click="StartAddStakeholderAsync" />
+                    </RadzenStack>
+
+                    <RadzenDataGrid @ref="StakeholderGrid" Data="@Stakeholders" TItem="GroupStakeholderDto"
+                                    ColumnWidth="100%" EditMode="DataGridEditMode.Single"
+                                    RowCreate="@OnCreateStakeholderRowAsync" RowUpdate="@OnUpdateStakeholderRowAsync"
+                                    AllowFiltering="false" AllowSorting="true" AllowColumnResize="true"
+                                    GridLines="DataGridGridLines.Horizontal" Style="max-height: 40vh"
+                                    EmptyText="Nobody in this group yet.">
+                        <Columns>
+
+                            <RadzenDataGridColumn TItem="GroupStakeholderDto" Property="Name" Title="Name">
+                                <EditTemplate Context="row">
+                                    <RadzenAutoComplete @bind-Value="row.Name" Data="@People" TextProperty="Name"
+                                                        LoadData="@SearchPeopleAsync" MinLength="2" FilterDelay="300"
+                                                        FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                                                        Change="@(person => PickPersonForRow(row, person))"
+                                                        Style="width:100%" Name="StakeholderName" />
+                                    <RadzenRequiredValidator Component="StakeholderName" Text="A name is required"
+                                                             Popup="true" />
+                                </EditTemplate>
+                            </RadzenDataGridColumn>
+
+                            <RadzenDataGridColumn TItem="GroupStakeholderDto" Property="EmailText" Title="Email">
+                                <EditTemplate Context="row">
+                                    <RadzenTextBox @bind-Value="row.EmailText" Style="width:100%" Name="StakeholderEmail" />
+                                    <RadzenRequiredValidator Component="StakeholderEmail" Text="An email is required"
+                                                             Popup="true" />
+                                    <RadzenEmailValidator Component="StakeholderEmail" Text="That is not a valid email"
+                                                          Popup="true" />
+                                </EditTemplate>
+                            </RadzenDataGridColumn>
+
+                            <RadzenDataGridColumn TItem="GroupStakeholderDto" Title="Status" Width="110px"
+                                                  Sortable="false">
+                                <Template Context="row">
+                                    @if (row.IsActive)
+                                    {
+                                        <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="Active" />
+                                    }
+                                    else
+                                    {
+                                        <RadzenBadge BadgeStyle="BadgeStyle.Light" Text="Inactive" />
+                                    }
+                                </Template>
+                                <EditTemplate Context="row">
+                                    @if (row.IsActive)
+                                    {
+                                        <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="Active" />
+                                    }
+                                    else
+                                    {
+                                        <RadzenBadge BadgeStyle="BadgeStyle.Light" Text="Inactive" />
+                                    }
+                                </EditTemplate>
+                            </RadzenDataGridColumn>
+
+                            <RadzenDataGridColumn TItem="GroupStakeholderDto" Title="Actions" Width="220px"
+                                                  Sortable="false">
+                                <Template Context="row">
+                                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem"
+                                                 AlignItems="AlignItems.Center">
+                                        <RadzenButton Text="Edit" ButtonStyle="ButtonStyle.Primary"
+                                                      Size="ButtonSize.Small" Disabled="@IsEditingStakeholder"
+                                                      Click="@(() => StartEditStakeholderAsync(row))" />
+                                        @if (row.IsActive)
+                                        {
+                                            <RadzenButton Text="Deactivate" ButtonStyle="ButtonStyle.Danger"
+                                                          Size="ButtonSize.Small"
+                                                          Click="@(() => SetStakeholderActiveAsync(row, false))" />
+                                        }
+                                        else
+                                        {
+                                            <RadzenButton Text="Reactivate" ButtonStyle="ButtonStyle.Success"
+                                                          Size="ButtonSize.Small"
+                                                          Click="@(() => SetStakeholderActiveAsync(row, true))" />
+                                        }
+                                    </RadzenStack>
+                                </Template>
+                                <EditTemplate Context="row">
+                                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem"
+                                                 AlignItems="AlignItems.Center">
+                                        <RadzenButton Text="Save" ButtonStyle="ButtonStyle.Primary"
+                                                      Size="ButtonSize.Small"
+                                                      Click="@(() => SaveStakeholderRowAsync(row))" />
+                                        <RadzenButton Text="Cancel" ButtonStyle="ButtonStyle.Light"
+                                                      Size="ButtonSize.Small"
+                                                      Click="@(() => CancelStakeholderEdit(row))" />
+                                    </RadzenStack>
+                                </EditTemplate>
+                            </RadzenDataGridColumn>
+
+                        </Columns>
+                    </RadzenDataGrid>
+
+                </RadzenStack>
+            </RadzenFieldset>
+
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" JustifyContent="JustifyContent.End">
+                <RadzenButton Icon="history" Text="View history" ButtonStyle="ButtonStyle.Secondary"
+                              Click="ViewGroupHistoryAsync" />
+                <RadzenButton Text="Close" ButtonStyle="ButtonStyle.Light" Click="Close" />
+            </RadzenStack>
+
+        </RadzenStack>
+    </Loader>
+}

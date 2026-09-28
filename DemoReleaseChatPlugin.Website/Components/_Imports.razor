@@ -1,0 +1,27 @@
+@using System.Net.Http
+@using System.Net.Http.Json
+@using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.AspNetCore.Components.Web
+@using static Microsoft.AspNetCore.Components.Web.RenderMode
+@using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.JSInterop
+@using DemoReleaseChatPlugin.Website
+@using DemoReleaseChatPlugin.Website.Components
+@using Radzen
+@using Radzen.Blazor
+@using Blazored.FluentValidation
+@using DemoReleaseChatPlugin.Website.Components.Shared
+@using DemoReleaseChatPlugin.RazorComponents
+@using Microsoft.AspNetCore.Authorization
+@using DemoReleaseChatPlugin.Website.Infrastructure.Auth
+
+@* The domain's typed ids and closed vocabularies. Pages bind directly to them - a Radzen
+   dropdown over ProjectId works because record equality makes value comparison the default. *@
+@using DemoReleaseChatPlugin.Domain.Releases.Values
+
+@* This global [Authorize] plus options.FallbackPolicy = options.DefaultPolicy is what makes the app
+   deny-by-default. Pages then opt UP to a role; nothing opts down except the API controller, which
+   is explicitly [AllowAnonymous]. *@
+@attribute [Authorize]

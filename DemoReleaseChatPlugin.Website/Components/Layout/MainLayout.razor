@@ -1,0 +1,45 @@
+@inherits LayoutComponentBase
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@inject Microsoft.Extensions.Hosting.IHostEnvironment Environment
+
+<RadzenComponents />
+
+<RadzenLayout>
+
+    <RadzenHeader>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center"
+                     JustifyContent="JustifyContent.SpaceBetween" class="px-3">
+            <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+                <RadzenSidebarToggle Click="@(() => sidebarExpanded = !sidebarExpanded)" />
+                <RadzenText TextStyle="TextStyle.H6" class="mb-0">@AppName</RadzenText>
+            </RadzenStack>
+            <UserNavbar />
+        </RadzenStack>
+    </RadzenHeader>
+
+    <RadzenSidebar @bind-Expanded="@sidebarExpanded">
+        <LeftPanelMenuItems />
+    </RadzenSidebar>
+
+    <RadzenBody>
+        <div class="rz-p-4">
+            <CustomErrorBoundary>
+                @Body
+            </CustomErrorBoundary>
+        </div>
+    </RadzenBody>
+
+    <RadzenFooter>
+        <RadzenText TextStyle="TextStyle.Caption" class="mb-0">
+            @AppName @AppVersion &middot; @Environment.EnvironmentName
+        </RadzenText>
+    </RadzenFooter>
+
+</RadzenLayout>
+
+@code {
+    bool sidebarExpanded = true;
+
+    string AppName => Configuration["AppInfo:Name"] ?? "DemoReleaseChatPlugin";
+    string AppVersion => Configuration["AppInfo:Version"] ?? "";
+}

@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>DemoReleaseChatPlugin.Infrastructure</RootNamespace>
+  </PropertyGroup>
+
+  <!-- AddReleaseMessaging registers an authorization policy for the CAP dashboard. -->
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DotNetCore.CAP" Version="10.0.1" />
+    <PackageReference Include="DotNetCore.CAP.Dashboard" Version="10.0.1" />
+    <PackageReference Include="DotNetCore.CAP.SqlServer" Version="10.0.1" />
+    <PackageReference Include="Savorboard.CAP.InMemoryMessageQueue" Version="10.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.2" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.2" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.2" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.2" />
+    <PackageReference Include="Polly" Version="8.6.6" />
+    <PackageReference Include="SendGrid" Version="9.29.3" />
+  </ItemGroup>
+
+  <!-- So the seed script ships inside the assembly and FileReader can find it by name suffix. -->
+  <ItemGroup>
+    <EmbeddedResource Include="Persistence\Scripts\*.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DemoReleaseChatPlugin.Application\DemoReleaseChatPlugin.Application.csproj" />
+    <ProjectReference Include="..\Shared\DoverPort.Common.Models\DoverPort.Common.Models.csproj" />
+    <ProjectReference Include="..\Shared\DoverPort.Emails\DoverPort.Emails.csproj" />
+  </ItemGroup>
+
+
+  <!--
+    The domain model, slices and pages are written in the nullable-oblivious style the spec
+    prescribes verbatim (`Name = name?.Trim();` onto a non-nullable `string Name`), while the spec
+    also pins Nullable=enable for this project. Keeping both means several hundred CS86xx warnings
+    that would bury any real one, so the nullable-flow diagnostics are silenced here and nowhere
+    else. The annotation context stays on, so `string?` still means something on the API surface.
+  -->
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CS8618;CS8601;CS8602;CS8603;CS8604;CS8619;CS8620;CS8625</NoWarn>
+  </PropertyGroup>
+
+
+  <!-- Same as the Shared project: supplied by the shared framework, kept to match the spec's list. -->
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1510</NoWarn>
+  </PropertyGroup>
+
+</Project>

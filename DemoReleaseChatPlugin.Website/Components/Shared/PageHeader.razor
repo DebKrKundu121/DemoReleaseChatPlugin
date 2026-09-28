@@ -1,0 +1,12 @@
+<h2>
+    @Text
+    @if (!string.IsNullOrWhiteSpace(Description))
+    {
+        <small class="text-muted"> @Description</small>
+    }
+</h2>
+
+@code {
+    [Parameter] public string Text { get; set; }
+    [Parameter] public string Description { get; set; }
+}

@@ -1,0 +1,92 @@
+@using DemoReleaseChatPlugin.Domain.Releases
+@using DemoReleaseChatPlugin.Application.Releases.Notices.GetReleaseHistory
+@inject DialogService DialogService
+
+@* Read-only, and small enough to be self-contained - no base class. *@
+<RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+
+    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center" Wrap="FlexWrap.Wrap">
+        <RadzenBadge BadgeStyle="@KindBadgeStyle" Text="@KindText" />
+        @if (Notice.IsRolledBack)
+        {
+            <RadzenBadge BadgeStyle="BadgeStyle.Danger" Text="Rolled back" />
+        }
+        @if (Notice.WasAnnounced)
+        {
+            <RadzenBadge BadgeStyle="BadgeStyle.Light" Text="Announced" />
+        }
+        @if (Notice.RiskLevel is not null)
+        {
+            <RadzenBadge BadgeStyle="BadgeStyle.Warning" Text="@($"Risk: {Notice.RiskLevel}")" />
+        }
+    </RadzenStack>
+
+    <RadzenStack Orientation="Orientation.Horizontal" Gap="2rem" Wrap="FlexWrap.Wrap">
+        <div>
+            <RadzenText TextStyle="TextStyle.Caption" class="mb-0">Project</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1" class="mb-0">@Notice.ProjectName</RadzenText>
+        </div>
+        <div>
+            <RadzenText TextStyle="TextStyle.Caption" class="mb-0">
+                @(Notice.Kind == ReleaseNoticeKind.Rollback.Value ? "Version rolled back" : "Version")
+            </RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1" class="mb-0">@Notice.Version</RadzenText>
+        </div>
+        <div>
+            <RadzenText TextStyle="TextStyle.Caption" class="mb-0">When</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1" class="mb-0">@Notice.EffectiveOn.ToString("dd/MM/yyyy HH:mm")</RadzenText>
+        </div>
+        <div>
+            <RadzenText TextStyle="TextStyle.Caption" class="mb-0">Lead developer</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body1" class="mb-0">@Notice.LeadDeveloper</RadzenText>
+        </div>
+    </RadzenStack>
+
+    @if (!string.IsNullOrWhiteSpace(Notice.RiskNotes))
+    {
+        <div>
+            <RadzenText TextStyle="TextStyle.Caption" class="mb-0">Risk / impact</RadzenText>
+            @* pre-wrap is what preserves the line breaks a user typed into a textarea. *@
+            <RadzenText TextStyle="TextStyle.Body1" Style="white-space:pre-wrap" class="mb-0">@Notice.RiskNotes</RadzenText>
+        </div>
+    }
+
+    <div>
+        @if (string.IsNullOrWhiteSpace(Notice.Detail))
+        {
+            <RadzenText TextStyle="TextStyle.Body1" class="mb-0"><em>No detail recorded.</em></RadzenText>
+        }
+        else
+        {
+            <RadzenText TextStyle="TextStyle.Body1" Style="white-space:pre-wrap" class="mb-0">@Notice.Detail</RadzenText>
+        }
+    </div>
+
+    <RadzenText TextStyle="TextStyle.Caption" class="mb-0">
+        Filed @Notice.CreatedOn.ToString("dd/MM/yyyy HH:mm") by @Notice.CreatedBy
+    </RadzenText>
+
+    <RadzenStack Orientation="Orientation.Horizontal" JustifyContent="JustifyContent.End">
+        <RadzenButton Text="Close" ButtonStyle="ButtonStyle.Light" Click="@(() => DialogService.Close())" />
+    </RadzenStack>
+
+</RadzenStack>
+
+@code {
+    [Parameter] public GetReleaseHistoryResult.NoticeDto Notice { get; set; }
+
+    string KindText => Notice.Kind switch
+    {
+        _ when Notice.Kind == ReleaseNoticeKind.Scheduled.Value => "Scheduled",
+        _ when Notice.Kind == ReleaseNoticeKind.Live.Value => "Live",
+        _ when Notice.Kind == ReleaseNoticeKind.Rollback.Value => "Rollback",
+        _ => Notice.Kind
+    };
+
+    BadgeStyle KindBadgeStyle => Notice.Kind switch
+    {
+        _ when Notice.Kind == ReleaseNoticeKind.Live.Value => BadgeStyle.Success,
+        _ when Notice.Kind == ReleaseNoticeKind.Rollback.Value => BadgeStyle.Danger,
+        _ => BadgeStyle.Info
+    };
+}

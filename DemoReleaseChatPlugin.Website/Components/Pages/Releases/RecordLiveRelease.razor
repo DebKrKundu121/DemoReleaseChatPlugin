@@ -1,0 +1,101 @@
+@page "/releases/live/new"
+@page "/releases/live/new/from/{ScheduledReleaseId:guid}"
+@using DemoReleaseChatPlugin.Application.Authorization
+@using DemoReleaseChatPlugin.Application.Releases.Notices.Lookups
+@attribute [Authorize(Roles = RoleConstants.ItAdmin)]
+@inherits RecordLiveReleaseBase
+
+<h4 class="mb-3">Record a go-live</h4>
+
+<Loader IsReady="IsReady">
+    <RadzenCard>
+        @if (Projects.Count == 0)
+        {
+            <RadzenAlert AlertStyle="AlertStyle.Warning" ShowIcon="true" AllowClose="false">
+                There are no active projects yet. Create one under Releases &gt; Projects first.
+            </RadzenAlert>
+        }
+        else
+        {
+            <EditForm Model="@Command" OnSubmit="@SubmitAsync"
+                      onkeypress="return event.keyCode != 13 || event.target.tagName == 'TEXTAREA'">
+                <FluentValidationValidator @ref="Validator" />
+
+                <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="1rem" Wrap="FlexWrap.Wrap">
+
+                        <div>
+                            <RadzenLabel Text="Project" />
+                            <div>
+                                <RadzenDropDown TValue="ProjectId" @bind-Value="Command.ProjectId" Data="@Projects"
+                                                TextProperty="Name" ValueProperty="Id" AllowFiltering="true"
+                                                Style="width:300px" Placeholder="Choose a project..."
+                                                Change="@(async _ => await OnProjectChangedAsync())" />
+                            </div>
+                            <ValidationMessage For="@(() => Command.ProjectId)" />
+                        </div>
+
+                        <div>
+                            <RadzenLabel Text="Version number" />
+                            <div><RadzenTextBox @bind-Value="Command.Version" Style="width:180px" Placeholder="e.g. 2.1.0" /></div>
+                            <ValidationMessage For="@(() => Command.Version)" />
+                        </div>
+
+                        <div>
+                            <RadzenLabel Text="Actual go-live time" />
+                            <div>
+                                <RadzenDatePicker TValue="DateTime?" @bind-Value="Command.DeployedOn" ShowTime="true"
+                                                  DateFormat="dd/MM/yyyy HH:mm" Style="width:240px" />
+                            </div>
+                            <ValidationMessage For="@(() => Command.DeployedOn)" />
+                        </div>
+
+                        <div>
+                            <RadzenLabel Text="Lead developer" />
+                            <div><RadzenTextBox @bind-Value="Command.LeadDeveloper" Style="width:260px" /></div>
+                            <ValidationMessage For="@(() => Command.LeadDeveloper)" />
+                        </div>
+
+                    </RadzenStack>
+
+                    @if (ScheduledNotices.Count > 0)
+                    {
+                        <div>
+                            <RadzenLabel Text="Announced by (optional)" />
+                            <div>
+                                <RadzenDropDown TValue="ReleaseNoticeId" @bind-Value="Command.ScheduledReleaseId"
+                                                Data="@ScheduledNotices" TextProperty="Display" ValueProperty="Id"
+                                                AllowClear="true" Style="max-width:560px; width:100%"
+                                                Placeholder="Not announced in advance"
+                                                Change="@(_ => OnScheduledNoticeChanged())" />
+                            </div>
+                            <RadzenText TextStyle="TextStyle.Caption">
+                                Links this deployment to the scheduled notice that announced it, and brings
+                                that notice's version, planned time, lead developer and summary across for
+                                you to amend. Leave empty for an unplanned hotfix.
+                            </RadzenText>
+                            <ValidationMessage For="@(() => Command.ScheduledReleaseId)" />
+                        </div>
+                    }
+
+                    <div>
+                        <RadzenLabel Text="Release notes" />
+                        <div>
+                            <RadzenTextArea @bind-Value="Command.ReleaseNotes" Rows="7" Style="max-width:820px; width:100%" />
+                        </div>
+                        <ValidationMessage For="@(() => Command.ReleaseNotes)" />
+                    </div>
+
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+                        <RadzenButton ButtonType="ButtonType.Submit" Text="Record and notify"
+                                      ButtonStyle="ButtonStyle.Primary" Disabled="@IsSubmitting" />
+                        <RadzenButton ButtonStyle="ButtonStyle.Light" Text="Cancel" Click="Cancel"
+                                      ButtonType="ButtonType.Button" />
+                    </RadzenStack>
+
+                </RadzenStack>
+            </EditForm>
+        }
+    </RadzenCard>
+</Loader>

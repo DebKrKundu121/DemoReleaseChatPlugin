@@ -1,0 +1,27 @@
+@inherits HistoryBase
+
+@* Newest first, and the newest point is Primary-styled. *@
+<Loader IsReady="Records is not null">
+    @if (Records.Count == 0)
+    {
+        <RadzenText Text="Nothing recorded yet." />
+    }
+    else
+    {
+        <RadzenTimeline>
+            <Items>
+                @for (var i = 0; i < Records.Count; i++)
+                {
+                    var record = Records[i];
+                    <RadzenTimelineItem PointStyle="@(i == 0 ? PointStyle.Primary : PointStyle.Base)">
+                        <LabelContent>
+                            <RadzenText TextStyle="TextStyle.Subtitle2" class="mb-0">@record.HappenedOn.ToString("dd/MM/yyyy HH:mm")</RadzenText>
+                            <RadzenText TextStyle="TextStyle.Caption" class="mb-0">by @record.HappenedBy</RadzenText>
+                        </LabelContent>
+                        <ChildContent>@record.Description</ChildContent>
+                    </RadzenTimelineItem>
+                }
+            </Items>
+        </RadzenTimeline>
+    }
+</Loader>

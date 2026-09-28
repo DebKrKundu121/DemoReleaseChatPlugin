@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    A stand-in for the internal DoverPort.Common.Models package. Entity<T>, Result, QueryResult,
+    Maybe, IClock, GuidId<T>, ValueOptions<T> - the building blocks the domain model is written
+    against.
+
+    THIS PROJECT HAS NO DEPENDENCIES, AND MUST KEEP NONE. DemoReleaseChatPlugin.Domain references it
+    and nothing else, so anything added here lands in the domain's reference graph. If a type needs
+    EF Core, ASP.NET Core or a serialiser, it belongs in one of the sibling projects instead.
+    (System.Text.Json is in the BCL, so the JSON converters on GuidId/ValueOptions cost nothing.)
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>DoverPort.Common.Models</RootNamespace>
+  </PropertyGroup>
+
+</Project>

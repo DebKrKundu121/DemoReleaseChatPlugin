@@ -1,0 +1,29 @@
+@inject NavigationManager Navigation
+
+@* An unauthenticated visitor is bounced to Microsoft Identity Web's sign-in endpoint; an
+   authenticated one who simply lacks the role is told so rather than sent round the loop again. *@
+<AuthorizeView>
+    <Authorized>
+        <RadzenCard class="m-3">
+            <RadzenText TextStyle="TextStyle.H6">You do not have access to this page</RadzenText>
+            <RadzenText TextStyle="TextStyle.Body2">
+                Your account is signed in but has not been granted the role this page needs. Ask an
+                IT administrator to assign it, then sign out and back in.
+            </RadzenText>
+        </RadzenCard>
+    </Authorized>
+    <NotAuthorized>
+        @{ RedirectToSignIn(); }
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    void RedirectToSignIn()
+    {
+        var returnUrl = Uri.EscapeDataString(
+            Navigation.ToBaseRelativePath(Navigation.Uri));
+
+        Navigation.NavigateTo(
+            $"MicrosoftIdentity/Account/SignIn?redirectUri=/{returnUrl}", forceLoad: true);
+    }
+}

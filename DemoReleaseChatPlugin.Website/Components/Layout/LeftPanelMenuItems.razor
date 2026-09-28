@@ -1,0 +1,33 @@
+@using DemoReleaseChatPlugin.Application.Authorization
+
+<RadzenPanelMenu>
+
+    <RadzenPanelMenuItem Text="Home" Path="" Icon="home" />
+
+    <AuthorizeView Roles="@RoleConstants.ItAdmin">
+        <RadzenPanelMenuItem Text="Releases" Icon="rocket_launch">
+            <RadzenPanelMenuItem Text="History" Path="releases/history" Icon="history" />
+            <RadzenPanelMenuItem Text="Schedule Release" Path="releases/scheduled/new" Icon="event_upcoming" />
+            <RadzenPanelMenuItem Text="Record Go-Live" Path="releases/live/new" Icon="publish" />
+            <RadzenPanelMenuItem Text="Rollbacks" Path="releases/rollbacks/new" Icon="undo" />
+
+            @* Target="_blank" because the queue is CAP middleware, not a Blazor @page - routing it
+               through the Blazor router renders a blank page. *@
+            <RadzenPanelMenuItem Text="Email Queue" Icon="mark_email_read" Target="_blank"
+                                 Path="releases/queue" />
+
+            <RadzenPanelMenuItem Text="Projects" Path="releases/admin/projects" Icon="folder_managed" />
+            <RadzenPanelMenuItem Text="Mandatory Stakeholder Groups"
+                                 Path="releases/admin/mandatory-stakeholders" Icon="groups" />
+        </RadzenPanelMenuItem>
+    </AuthorizeView>
+
+    <AuthorizeView Roles="@RoleConstants.ItAdmin">
+        <RadzenPanelMenuItem Text="Administration" Icon="admin_panel_settings">
+            <RadzenPanelMenuItem Text="Users &amp; Roles" Path="admin/users-and-roles" Icon="manage_accounts" />
+        </RadzenPanelMenuItem>
+    </AuthorizeView>
+
+    <RadzenPanelMenuItem Text="Release Notes" Path="release-notes" Icon="description" />
+
+</RadzenPanelMenu>

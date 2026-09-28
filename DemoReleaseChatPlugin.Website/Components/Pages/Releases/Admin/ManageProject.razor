@@ -1,0 +1,177 @@
+@page "/releases/admin/projects/{ProjectId:guid}"
+@using DemoReleaseChatPlugin.Application.Authorization
+@using DemoReleaseChatPlugin.Application.Releases.StakeholderGroups
+@attribute [Authorize(Roles = RoleConstants.ItAdmin)]
+@inherits ManageProjectBase
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+
+    <div>
+        <RadzenButton Icon="arrow_back" Text="All projects" ButtonStyle="ButtonStyle.Light"
+                      Size="ButtonSize.Small" Click="BackToProjects" />
+    </div>
+
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center"
+                 JustifyContent="JustifyContent.SpaceBetween">
+        <h4 class="mb-0">Manage Project</h4>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+            <RadzenSwitch Value="@ShowInactive" TValue="bool"
+                          Change="@(async v => await OnShowInactiveChanged(v))" Name="showInactive" />
+            <RadzenLabel Text="Show inactive" Component="showInactive" />
+        </RadzenStack>
+    </RadzenStack>
+
+    @* The read reports "legitimately not there" separately from "the read failed", so a stale
+       bookmark gets a plain empty state rather than an error dialog or a spinner that never stops. *@
+    @if (NotFound)
+    {
+        <RadzenAlert AlertStyle="AlertStyle.Light" Shade="Shade.Lighter" AllowClose="false"
+                     Title="Project not found">
+            This project no longer exists. It may have been removed since this page was linked.
+        </RadzenAlert>
+    }
+    else
+    {
+    <Loader IsReady="@(Result is not null && EditCommand is not null)">
+        <RadzenRow Gap="1rem">
+
+            <RadzenColumn Size="12" SizeLG="5">
+                <RadzenFieldset Text="Details">
+                    <EditForm Model="@EditCommand" OnSubmit="@SaveDetailsAsync"
+                              onkeypress="return event.keyCode != 13 || event.target.tagName == 'TEXTAREA'">
+                        <FluentValidationValidator @ref="Validator" />
+
+                        <RadzenStack Orientation="Orientation.Vertical" Gap="0.75rem">
+
+                            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+                                <RadzenText TextStyle="TextStyle.Body2" Style="width:120px" class="mb-0">Status</RadzenText>
+                                @if (Result.IsProjectArchived)
+                                {
+                                    <RadzenBadge BadgeStyle="BadgeStyle.Light" Text="ARCHIVED" />
+                                }
+                                else
+                                {
+                                    <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="ACTIVE" />
+                                }
+                            </RadzenStack>
+
+                            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Start">
+                                <RadzenText TextStyle="TextStyle.Body2" Style="width:120px" class="mt-2">Name</RadzenText>
+                                <div style="flex:1">
+                                    <RadzenTextBox @bind-Value="EditCommand.Name" Style="width:100%" />
+                                    <ValidationMessage For="@(() => EditCommand.Name)" />
+                                </div>
+                            </RadzenStack>
+
+                            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Start">
+                                <RadzenText TextStyle="TextStyle.Body2" Style="width:120px" class="mt-2">Description</RadzenText>
+                                <div style="flex:1">
+                                    <RadzenTextArea @bind-Value="EditCommand.Description" Rows="3" Style="width:100%" />
+                                    <ValidationMessage For="@(() => EditCommand.Description)" />
+                                </div>
+                            </RadzenStack>
+
+                            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+                                <RadzenText TextStyle="TextStyle.Body2" Style="width:120px" class="mb-0">Releases</RadzenText>
+                                <RadzenText TextStyle="TextStyle.Body2" class="mb-0">@Result.ReleaseCount</RadzenText>
+                            </RadzenStack>
+
+                            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+                                <RadzenText TextStyle="TextStyle.Body2" Style="width:120px" class="mb-0">Created</RadzenText>
+                                <RadzenText TextStyle="TextStyle.Body2" class="mb-0">
+                                    @Result.CreatedOn.ToString("dd/MM/yyyy HH:mm") by @Result.CreatedBy
+                                </RadzenText>
+                            </RadzenStack>
+
+                            @* The submit button lives in Options below, so the form still posts on Enter
+                               from a text box being blocked - Save calls SaveDetailsAsync directly. *@
+                            <RadzenButton ButtonType="ButtonType.Submit" Style="display:none" />
+
+                        </RadzenStack>
+                    </EditForm>
+                </RadzenFieldset>
+            </RadzenColumn>
+
+            <RadzenColumn Size="12" SizeLG="7">
+                <RadzenFieldset Text="Stakeholder Groups">
+                    <RadzenDataGrid Data="@Result.Groups" TItem="StakeholderGroupDto" IsLoading="@IsBusy"
+                                    ColumnWidth="100%" AllowSorting="true" AllowColumnResize="true"
+                                    GridLines="DataGridGridLines.Horizontal"
+                                    EmptyText="No stakeholder groups yet. Add one so this project's releases reach the right people.">
+                        <Columns>
+
+                            <RadzenDataGridColumn TItem="StakeholderGroupDto" Property="Name" Title="Group" />
+
+                            <RadzenDataGridColumn TItem="StakeholderGroupDto" Property="Description" Title="Description" />
+
+                            <RadzenDataGridColumn TItem="StakeholderGroupDto" Title="People" Width="100px"
+                                                  TextAlign="TextAlign.Center" Sortable="false">
+                                <Template Context="group">@group.StakeholderSummary</Template>
+                            </RadzenDataGridColumn>
+
+                            <RadzenDataGridColumn TItem="StakeholderGroupDto" Title="Status" Width="110px" Sortable="false">
+                                <Template Context="group">
+                                    @if (group.IsActive)
+                                    {
+                                        <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="Active" />
+                                    }
+                                    else
+                                    {
+                                        <RadzenBadge BadgeStyle="BadgeStyle.Light" Text="Inactive" />
+                                    }
+                                </Template>
+                            </RadzenDataGridColumn>
+
+                            <RadzenDataGridColumn TItem="StakeholderGroupDto" Title="Actions" Width="120px" Sortable="false">
+                                <Template Context="group">
+                                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+                                        <RadzenButton Text="Manage" ButtonStyle="ButtonStyle.Primary"
+                                                      Size="ButtonSize.Small"
+                                                      Click="@(() => ManageGroupAsync(group))" />
+                                    </RadzenStack>
+                                </Template>
+                            </RadzenDataGridColumn>
+
+                        </Columns>
+                    </RadzenDataGrid>
+
+                    <Spacer />
+
+                    <RadzenText TextStyle="TextStyle.Caption">
+                        Plus @Result.ActiveMandatoryStakeholderCount mandatory stakeholder(s) who are
+                        emailed about every project.
+                    </RadzenText>
+                </RadzenFieldset>
+            </RadzenColumn>
+
+        </RadzenRow>
+
+        <Spacer />
+
+        <RadzenFieldset Text="Options">
+            <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center"
+                         Wrap="FlexWrap.Wrap">
+                <RadzenButton Text="Save" ButtonStyle="ButtonStyle.Primary" Click="SaveDetailsAsync" />
+                <RadzenButton Text="Undo changes" ButtonStyle="ButtonStyle.Light" Click="ResetEditAsync" />
+                <RadzenButton Icon="group_add" Text="Add Stakeholder Group" ButtonStyle="ButtonStyle.Secondary"
+                              Click="AddGroupAsync" />
+                <RadzenButton Icon="history" Text="View history" ButtonStyle="ButtonStyle.Secondary"
+                              Click="ViewProjectHistoryAsync" />
+                @if (Result.IsProjectArchived)
+                {
+                    <RadzenButton Text="Restore" ButtonStyle="ButtonStyle.Success"
+                                  Click="@(() => SetArchivedAsync(false))" />
+                }
+                else
+                {
+                    <RadzenButton Text="Archive" ButtonStyle="ButtonStyle.Danger"
+                                  Click="@(() => SetArchivedAsync(true))" />
+                }
+            </RadzenStack>
+        </RadzenFieldset>
+
+    </Loader>
+
+}
+
+</RadzenStack>

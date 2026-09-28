@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <RootNamespace>DemoReleaseChatPlugin.RazorComponents</RootNamespace>
+  </PropertyGroup>
+
+  <!--
+    Deliberately NO Radzen.Blazor reference. Consumers run Radzen 4.x through 11.x; a reference here
+    is nearest-wins-resolved down to the oldest host, so a compiled RadzenCard would bind an 8.x type
+    identity against a 4.x assembly and throw at first render rather than at build. The card is plain
+    HTML and takes its look from a CSS class the host supplies. Same reasoning rules out scoped
+    .razor.css - at least one consumer never links its .styles.css bundle.
+  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.2" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DemoReleaseChatPlugin.Sdk\DemoReleaseChatPlugin.Sdk.csproj" />
+  </ItemGroup>
+
+</Project>

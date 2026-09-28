@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    A stand-in for the internal DoverPort.AspNetCore.Common package: ClaimsPrincipal extensions for
+    reading Entra claims, and the globalisation settings applied at startup. Web-host concerns only,
+    which is why the Website is the one project that references it.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>DoverPort.AspNetCore.Common</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Identity.Web" Version="4.3.0" />
+    <!--
+      Transitive security pins, kept with the package that pulls them in. Microsoft.Identity.Web
+      4.3.0 -> .TokenCache -> System.Security.Cryptography.Xml 10.0.0, which carries eight known
+      high-severity advisories; 10.0.11 is the first 10.0.x that clears all of them (10.0.2 still
+      trips four). Same chain for Microsoft.AspNetCore.DataProtection 10.0.0, which carries a known
+      critical advisory (GHSA-9mv3-2cwr-p262).
+
+      These used to sit in the single shared project; they live here now because this is the only
+      project that references Identity.Web, and the Website still picks them up through it. Drop
+      them once Identity.Web ships a version that pins patched ones itself.
+    -->
+    <PackageReference Include="System.Security.Cryptography.Xml" Version="10.0.11" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="10.0.11" />
+  </ItemGroup>
+
+  <!-- Supplied by the shared framework at runtime; see the note in DoverPort.Common.Pipeline. -->
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);NU1510</NoWarn>
+  </PropertyGroup>
+
+</Project>

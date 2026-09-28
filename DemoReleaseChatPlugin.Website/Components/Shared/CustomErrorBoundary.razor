@@ -1,0 +1,25 @@
+<ErrorBoundary @ref="Boundary">
+    <ChildContent>
+        @ChildContent
+    </ChildContent>
+    <ErrorContent Context="exception">
+        <RadzenCard class="m-3">
+            <RadzenStack Orientation="Orientation.Vertical" Gap="0.75rem">
+                <RadzenText TextStyle="TextStyle.H6">Something went wrong</RadzenText>
+                <RadzenText TextStyle="TextStyle.Body2">
+                    That page could not be shown. The error has been logged. Try again, and if it
+                    keeps happening let the IT team know what you were doing.
+                </RadzenText>
+                <RadzenButton Text="Try again" ButtonStyle="ButtonStyle.Light" Click="Recover" />
+            </RadzenStack>
+        </RadzenCard>
+    </ErrorContent>
+</ErrorBoundary>
+
+@code {
+    [Parameter] public RenderFragment ChildContent { get; set; }
+
+    ErrorBoundary Boundary { get; set; }
+
+    void Recover() => Boundary?.Recover();
+}

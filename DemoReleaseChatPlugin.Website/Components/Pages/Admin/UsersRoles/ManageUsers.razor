@@ -1,0 +1,15 @@
+@page "/admin/users-and-roles"
+@using DemoReleaseChatPlugin.Application.Authorization
+@using DemoReleaseChatPlugin.Website.Components.Pages.Admin.UsersRoles.Components
+@attribute [Authorize(Roles = RoleConstants.ItAdmin)]
+@inherits ManageUsersBase
+
+<h4 class="mb-3">Users &amp; roles</h4>
+
+<RadzenTabs>
+    <Tabs>
+        <RadzenTabsItem Text="Users"><AllUsers /></RadzenTabsItem>
+        <RadzenTabsItem Text="Roles"><AllRoles /></RadzenTabsItem>
+        <RadzenTabsItem Text="Search People"><SearchPeople /></RadzenTabsItem>
+    </Tabs>
+</RadzenTabs>

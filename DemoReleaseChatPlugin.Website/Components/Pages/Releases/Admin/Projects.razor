@@ -1,0 +1,116 @@
+@page "/releases/admin/projects"
+@using DemoReleaseChatPlugin.Application.Authorization
+@using DemoReleaseChatPlugin.Application.Releases.Projects.GetProjects
+@* The original code carries NO role attribute here, which left the page reachable by any
+   authenticated user who knew the URL. That is an oversight, not a decision - so it is gated. *@
+@attribute [Authorize(Roles = RoleConstants.ItAdmin)]
+@inherits ProjectsBase
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center"
+                 JustifyContent="JustifyContent.SpaceBetween">
+        <h4 class="mb-0">Projects</h4>
+        <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+            <RadzenSwitch Value="@ShowArchived" TValue="bool" Change="@(async v => await OnShowArchivedChanged(v))"
+                          Name="showArchived" />
+            <RadzenLabel Text="Show archived" Component="showArchived" />
+            <RadzenButton Icon="add" Text="Add" ButtonStyle="ButtonStyle.Primary"
+                          Disabled="@IsCreating" Click="StartCreating" />
+        </RadzenStack>
+    </RadzenStack>
+
+    @if (IsCreating)
+    {
+        <RadzenCard>
+            <EditForm Model="@Command" OnSubmit="@SubmitAsync"
+                      onkeypress="return event.keyCode != 13 || event.target.tagName == 'TEXTAREA'">
+                <FluentValidationValidator @ref="Validator" />
+                <RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Start">
+                        <RadzenText TextStyle="TextStyle.Body2" Style="width:100px" class="mt-2">Name</RadzenText>
+                        <div style="flex:1">
+                            <RadzenTextBox @bind-Value="Command.Name" Style="max-width:420px; width:100%"
+                                           Placeholder="e.g. DemoReleaseChatPlugin" />
+                            <div><ValidationMessage For="@(() => Command.Name)" /></div>
+                            @* The name is the integration key other applications call the API with. *@
+                            <RadzenText TextStyle="TextStyle.Caption">
+                                Must match the consuming application's own name exactly - it is the key
+                                the public API is called with.
+                            </RadzenText>
+                        </div>
+                    </RadzenStack>
+
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Start">
+                        <RadzenText TextStyle="TextStyle.Body2" Style="width:100px" class="mt-2">Description</RadzenText>
+                        <div style="flex:1">
+                            <RadzenTextArea @bind-Value="Command.Description" Rows="2"
+                                            Style="max-width:640px; width:100%" />
+                            <div><ValidationMessage For="@(() => Command.Description)" /></div>
+                        </div>
+                    </RadzenStack>
+
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem">
+                        <RadzenButton ButtonType="ButtonType.Submit" Text="Create" ButtonStyle="ButtonStyle.Primary" />
+                        <RadzenButton ButtonType="ButtonType.Button" Text="Cancel" ButtonStyle="ButtonStyle.Light"
+                                      Click="CancelCreating" />
+                    </RadzenStack>
+
+                </RadzenStack>
+            </EditForm>
+        </RadzenCard>
+    }
+
+    <RadzenDataGrid Data="@Projects" TItem="GetProjectsResult.ProjectDto" IsLoading="@IsBusy"
+                    ColumnWidth="100%" AllowFiltering="true" AllowColumnResize="true" AllowSorting="true"
+                    FilterMode="FilterMode.SimpleWithMenu"
+                    FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                    LogicalFilterOperator="LogicalFilterOperator.And"
+                    GridLines="DataGridGridLines.Horizontal" Style="max-height: 60vh"
+                    EmptyText="No projects yet. Create one to start recording releases.">
+        <Columns>
+
+            <RadzenDataGridColumn TItem="GetProjectsResult.ProjectDto" Property="Name" Title="Project" />
+
+            <RadzenDataGridColumn TItem="GetProjectsResult.ProjectDto" Property="GroupCount" Title="Groups"
+                                  Width="100px" TextAlign="TextAlign.Center" />
+
+            <RadzenDataGridColumn TItem="GetProjectsResult.ProjectDto" Title="Stakeholders"
+                                  Width="120px" TextAlign="TextAlign.Center" Sortable="false">
+                <Template Context="project">
+                    <span title="@project.StakeholderBreakdown">@project.StakeholderCount</span>
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="GetProjectsResult.ProjectDto" Property="ReleaseCount" Title="Releases"
+                                  Width="110px" TextAlign="TextAlign.Center" />
+
+            <RadzenDataGridColumn TItem="GetProjectsResult.ProjectDto" Title="Status"
+                                  Width="110px" Filterable="false" Sortable="false">
+                <Template Context="project">
+                    @if (project.IsArchived)
+                    {
+                        <RadzenBadge BadgeStyle="BadgeStyle.Light" Text="Archived" />
+                    }
+                    else
+                    {
+                        <RadzenBadge BadgeStyle="BadgeStyle.Success" Text="Active" />
+                    }
+                </Template>
+            </RadzenDataGridColumn>
+
+            <RadzenDataGridColumn TItem="GetProjectsResult.ProjectDto" Title="Actions"
+                                  Width="140px" Filterable="false" Sortable="false">
+                <Template Context="project">
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+                        <RadzenButton Text="Manage" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small"
+                                      Click="@(() => Manage(project.Id))" />
+                    </RadzenStack>
+                </Template>
+            </RadzenDataGridColumn>
+
+        </Columns>
+    </RadzenDataGrid>
+
+</RadzenStack>

@@ -1,0 +1,144 @@
+@using System.Linq
+@using DemoReleaseChatPlugin.Domain.Releases
+@using DemoReleaseChatPlugin.Application.Releases.Notices.GetReleaseHistory
+
+<RadzenDataGrid @ref="grid" Data="@Notices" TItem="GetReleaseHistoryResult.NoticeDto" ColumnWidth="100%"
+                IsLoading="@IsBusy"
+                AllowFiltering="true" AllowColumnResize="true" AllowSorting="true"
+                FilterMode="FilterMode.Simple"
+                FilterCaseSensitivity="FilterCaseSensitivity.CaseInsensitive"
+                LogicalFilterOperator="LogicalFilterOperator.And" Style="max-height: 62vh"
+                RowSelect="@NoticeSelected" GridLines="DataGridGridLines.Horizontal"
+                RowRender="@(a => a.Attributes["style"] = "cursor:pointer")"
+                EmptyText="No release notices yet.">
+    <Columns>
+
+        <RadzenDataGridColumn TItem="GetReleaseHistoryResult.NoticeDto" Property="Kind" Title="Type" Width="170px"
+                              FilterValue="@selectedKinds" FilterOperator="FilterOperator.In">
+            <FilterTemplate>
+                <RadzenDropDown @bind-Value="@selectedKinds" Data="@ReleaseNoticeKind.All.Select(x => x.Value)" Multiple="true"
+                                AllowClear="true" Style="width:100%" Change="@OnKindFilterChangedAsync" />
+            </FilterTemplate>
+            <Template Context="notice">
+                <RadzenStack Orientation="Orientation.Horizontal" Gap="0.35rem" AlignItems="AlignItems.Center">
+                    <RadzenIcon Icon="@IconFor(notice.Kind)" Style="@($"color:{ColourFor(notice.Kind)}")" />
+                    <span>@BadgeTextFor(notice.Kind)</span>
+                </RadzenStack>
+            </Template>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn TItem="GetReleaseHistoryResult.NoticeDto" Property="ProjectName" Title="Project"
+                              Width="210px" FilterValue="@selectedProjects" FilterOperator="FilterOperator.In">
+            <FilterTemplate>
+                <RadzenDropDown @bind-Value="@selectedProjects" Data="@ProjectNames" Multiple="true"
+                                AllowClear="true" Style="width:100%" Change="@OnProjectFilterChangedAsync" />
+            </FilterTemplate>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn TItem="GetReleaseHistoryResult.NoticeDto" Property="Version" Title="Version" Width="110px" />
+
+        <RadzenDataGridColumn TItem="GetReleaseHistoryResult.NoticeDto" Property="EffectiveOn" Title="When"
+                              Width="150px" SortOrder="SortOrder.Descending"
+                              FormatString="{0:dd/MM/yyyy HH:mm}" />
+
+        <RadzenDataGridColumn TItem="GetReleaseHistoryResult.NoticeDto" Title="Flags" Width="200px"
+                              Filterable="false" Sortable="false">
+            <Template Context="notice">@FlagsFor(notice)</Template>
+        </RadzenDataGridColumn>
+
+        <RadzenDataGridColumn TItem="GetReleaseHistoryResult.NoticeDto" Property="LeadDeveloper"
+                              Title="Lead developer" Width="150px" />
+
+        <RadzenDataGridColumn TItem="GetReleaseHistoryResult.NoticeDto" Title="Actions" Width="180px"
+                              Filterable="false" Sortable="false">
+            <Template Context="notice">
+                @* The stopPropagation wrapper is what stops an action click ALSO firing the row's
+                   RowSelect and opening the details dialog behind the navigation. *@
+                <div @onclick:stopPropagation="true">
+                    <RadzenStack Orientation="Orientation.Horizontal" Gap="0.5rem" AlignItems="AlignItems.Center">
+                        @if (notice.Kind == ReleaseNoticeKind.Scheduled.Value)
+                        {
+                            <RadzenButton Icon="rocket_launch" Text="Record go-live"
+                                          ButtonStyle="ButtonStyle.Success" Size="ButtonSize.Small"
+                                          Click="@(() => GoLiveRequested.InvokeAsync(notice))" />
+                        }
+                        else if (notice.Kind == ReleaseNoticeKind.Live.Value && !notice.IsRolledBack)
+                        {
+                            <RadzenButton Icon="undo" Text="Roll back"
+                                          ButtonStyle="ButtonStyle.Danger" Size="ButtonSize.Small"
+                                          Click="@(() => RollbackRequested.InvokeAsync(notice))" />
+                        }
+                    </RadzenStack>
+                </div>
+            </Template>
+        </RadzenDataGridColumn>
+
+    </Columns>
+</RadzenDataGrid>
+
+@code {
+    [Parameter] public bool IsBusy { get; set; }
+    [Parameter] public IReadOnlyList<GetReleaseHistoryResult.NoticeDto> Notices { get; set; }
+    [Parameter] public EventCallback<GetReleaseHistoryResult.NoticeDto> NoticeSelected { get; set; }
+    [Parameter] public EventCallback<GetReleaseHistoryResult.NoticeDto> GoLiveRequested { get; set; }
+    [Parameter] public EventCallback<GetReleaseHistoryResult.NoticeDto> RollbackRequested { get; set; }
+
+    RadzenDataGrid<GetReleaseHistoryResult.NoticeDto> grid;
+
+    IEnumerable<string> selectedKinds;
+    IEnumerable<string> selectedProjects;
+
+    IEnumerable<string> ProjectNames =>
+        Notices?.Select(x => x.ProjectName).Distinct().OrderBy(x => x) ?? Enumerable.Empty<string>();
+
+    public static string BadgeTextFor(string kind) => kind switch
+    {
+        _ when kind == ReleaseNoticeKind.Scheduled.Value => "Scheduled",
+        _ when kind == ReleaseNoticeKind.Live.Value => "Live",
+        _ when kind == ReleaseNoticeKind.Rollback.Value => "Rollback",
+        _ => kind
+    };
+
+    static string IconFor(string kind) => kind switch
+    {
+        _ when kind == ReleaseNoticeKind.Scheduled.Value => "event_upcoming",
+        _ when kind == ReleaseNoticeKind.Live.Value => "rocket_launch",
+        _ when kind == ReleaseNoticeKind.Rollback.Value => "undo",
+        _ => "help"
+    };
+
+    static string ColourFor(string kind) => kind switch
+    {
+        _ when kind == ReleaseNoticeKind.Scheduled.Value => "var(--rz-info)",
+        _ when kind == ReleaseNoticeKind.Live.Value => "var(--rz-success)",
+        _ when kind == ReleaseNoticeKind.Rollback.Value => "var(--rz-danger)",
+        _ => "var(--rz-text-secondary-color)"
+    };
+
+    static string FlagsFor(GetReleaseHistoryResult.NoticeDto notice)
+    {
+        var flags = new List<string>();
+
+        if (notice.IsRolledBack) flags.Add("Rolled back");
+        if (notice.WasAnnounced) flags.Add("Announced");
+        if (notice.RiskLevel is not null) flags.Add($"Risk: {notice.RiskLevel}");
+
+        return string.Join("  ·  ", flags);
+    }
+
+    async Task OnKindFilterChangedAsync(object value)
+    {
+        selectedKinds = Normalise(selectedKinds);
+        await grid.Reload();
+    }
+
+    async Task OnProjectFilterChangedAsync(object value)
+    {
+        selectedProjects = Normalise(selectedProjects);
+        await grid.Reload();
+    }
+
+    // The bound value must be NULLED when the selection empties, or the grid filters everything out.
+    static IEnumerable<string> Normalise(IEnumerable<string> selection) =>
+        selection is not null && selection.Any() ? selection : null;
+}

@@ -1,0 +1,80 @@
+@inherits DemoReleaseChatPluginReleaseNotesCardBase
+
+@* Plain HTML on purpose - see the csproj for why this package has no Radzen reference. *@
+<div class="@ContainerClass" style="@Style">
+
+    @if (ShowTitle)
+    {
+        <h5 style="margin-top:0">@Title</h5>
+    }
+
+    @if (!IsLoaded)
+    {
+        <p style="@Muted">Loading release notes&hellip;</p>
+    }
+    else if (Status == DemoReleaseChatPluginReleasesStatus.UnknownApplication)
+    {
+        <p style="@Muted">DemoReleaseChatPlugin has no application named '@ResolvedApplicationName'.</p>
+    }
+    else if (Status == DemoReleaseChatPluginReleasesStatus.Unavailable)
+    {
+        <p style="@Muted">@ErrorMessage</p>
+    }
+    else if (Entries.Count == 0)
+    {
+        <p style="@Muted">@(HasWindow ? EmptyWindowMessage : EmptyMessage)</p>
+    }
+    else
+    {
+        <div style="@(MaxHeight == "none" ? "" : $"max-height:{MaxHeight}; overflow-y:auto")">
+            @foreach (var entry in Entries)
+            {
+                <div style="margin-bottom:1rem @(entry.IsRolledBack ? "; opacity:.65" : "")">
+
+                    <div style="display:flex; align-items:center; gap:.5rem; flex-wrap:wrap">
+                        <strong>@entry.Heading</strong>
+
+                        @if (entry.IsLatest)
+                        {
+                            <span style="@LatestMarker">Latest</span>
+                        }
+                        @if (entry.IsRollback)
+                        {
+                            <span style="@DangerMarker">Rollback</span>
+                        }
+                        @if (entry.IsRolledBack)
+                        {
+                            <span style="@DangerMarker">Rolled back</span>
+                        }
+                    </div>
+
+                    @if (entry.LinesCaption is not null)
+                    {
+                        <div style="@Muted; font-size:.875em">@entry.LinesCaption</div>
+                    }
+
+                    @if (entry.Lines.Count > 0)
+                    {
+                        <ul style="margin:.25rem 0 0 1.1rem; padding:0">
+                            @foreach (var line in entry.Lines)
+                            {
+                                <li>
+                                    @if (LineTemplate is not null)
+                                    {
+                                        @LineTemplate(line)
+                                    }
+                                    else
+                                    {
+                                        @line
+                                    }
+                                </li>
+                            }
+                        </ul>
+                    }
+
+                </div>
+            }
+        </div>
+    }
+
+</div>

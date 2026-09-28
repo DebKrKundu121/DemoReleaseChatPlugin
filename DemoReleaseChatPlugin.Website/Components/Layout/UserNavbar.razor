@@ -1,0 +1,17 @@
+@using DoverPort.AspNetCore.Common.Auth
+
+<AuthorizeView>
+    <Authorized>
+        <RadzenProfileMenu>
+            <Template>
+                <RadzenText TextStyle="TextStyle.Body2" class="mb-0">
+                    @context.User.GetDisplayName()
+                </RadzenText>
+            </Template>
+            <ChildContent>
+                <RadzenProfileMenuItem Text="Sign out" Icon="logout"
+                                       Path="MicrosoftIdentity/Account/SignOut" />
+            </ChildContent>
+        </RadzenProfileMenu>
+    </Authorized>
+</AuthorizeView>

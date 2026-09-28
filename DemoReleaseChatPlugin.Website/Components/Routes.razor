@@ -1,0 +1,13 @@
+@* AdditionalAssemblies picks up ZenithReleaseNotesPage's /release-notes route from the
+   RazorComponents package. *@
+<Router AppAssembly="typeof(Program).Assembly"
+        AdditionalAssemblies="new[] { typeof(DemoReleaseChatPlugin.RazorComponents.DemoReleaseChatPluginReleaseNotesCard).Assembly }">
+    <Found Context="routeData">
+        <AuthorizeRouteView RouteData="@routeData" DefaultLayout="typeof(Layout.MainLayout)">
+            <NotAuthorized>
+                <RedirectToLogin />
+            </NotAuthorized>
+        </AuthorizeRouteView>
+        <FocusOnNavigate RouteData="@routeData" Selector="h1" />
+    </Found>
+</Router>

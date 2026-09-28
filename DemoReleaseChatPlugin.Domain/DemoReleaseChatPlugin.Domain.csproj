@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    The innermost ring. This project must never reference EF Core, Mediator, FluentValidation,
+    ASP.NET Core or anything else from an outer layer - that restriction is the whole point of it
+    being a separate project rather than a folder. If a domain type needs something from outside
+    (a clock, an id generator, a directory lookup), it takes it as a parameter or the Application
+    layer declares a port for it.
+
+    DoverPort.Common.Models is the one permitted reference: it carries the building blocks the
+    domain is written against (Entity<T>, IDomainEvent, IAggregateRoot, Result, Maybe, IClock,
+    GuidId<T>, ValueOptions<T>). It is a stand-in for an internal NuGet package, not an outer layer,
+    and it has NO dependencies of its own - so this project's reference graph is the BCL and nothing
+    else. Keep it that way: adding anything to DoverPort.Common.Models adds it here too.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>DemoReleaseChatPlugin.Domain</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Shared\DoverPort.Common.Models\DoverPort.Common.Models.csproj" />
+  </ItemGroup>
+
+  <!--
+    Same rationale as Core/Infrastructure/Website: the entities are written in the spec's
+    nullable-oblivious style (`Name = name?.Trim();` onto a non-nullable `string Name`) while
+    Nullable stays enabled, so the flow diagnostics are silenced and the annotation context is kept.
+  -->
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CS8618;CS8601;CS8602;CS8603;CS8604;CS8619;CS8620;CS8625</NoWarn>
+  </PropertyGroup>
+
+</Project>

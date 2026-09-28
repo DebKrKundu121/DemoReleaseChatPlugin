@@ -1,0 +1,47 @@
+@page "/admin/users-and-roles/{UserId:guid}"
+@using DemoReleaseChatPlugin.Application.Authorization
+@using DemoReleaseChatPlugin.Website.Components.Pages.Admin.UsersRoles.Components
+@attribute [Authorize(Roles = RoleConstants.ItAdmin)]
+@inherits UserDetailBase
+
+<RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.5rem">
+    <RadzenButton Icon="arrow_back" Text="Back" ButtonStyle="ButtonStyle.Light"
+                  Size="ButtonSize.Small" Click="Back" />
+    <h4 class="mb-0">Manage user</h4>
+</RadzenStack>
+
+<Spacer />
+
+<Loader IsReady="IsLoaded">
+    @if (NotFound)
+    {
+        <RadzenCard>
+            <RadzenText TextStyle="TextStyle.Body1">That user no longer exists.</RadzenText>
+        </RadzenCard>
+    }
+    else if (User is not null)
+    {
+        <RadzenCard>
+            <PersonDetailsCard ExternalId="@User.ExternalId" />
+        </RadzenCard>
+
+        <Spacer />
+
+        <RadzenTabs>
+            <Tabs>
+                <RadzenTabsItem Text="Roles">
+                    <ManageRoles UserId="UserId" UserName="@User.Name" />
+                </RadzenTabsItem>
+
+                @* The Delete tab only appears for a user who HAS at least one role: deleting removes
+                   role assignments, and a user with none has nothing to remove, so the option is noise. *@
+                @if (HasAnyRole)
+                {
+                    <RadzenTabsItem Text="Delete User">
+                        <DeleteUser UserId="UserId" UserName="@User.Name" />
+                    </RadzenTabsItem>
+                }
+            </Tabs>
+        </RadzenTabs>
+    }
+</Loader>
