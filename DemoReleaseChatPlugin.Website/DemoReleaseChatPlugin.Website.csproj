@@ -15,10 +15,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Azure.AI.OpenAI" Version="2.1.0" />
     <PackageReference Include="Blazored.FluentValidation" Version="2.2.0" />
     <PackageReference Include="Mediator.SourceGenerator" Version="3.0.2" PrivateAssets="all" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.2" PrivateAssets="all" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="10.0.2" PrivateAssets="all" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.8.0" />
     <PackageReference Include="Microsoft.Graph" Version="5.100.0" />
     <!--
       Microsoft.Graph.Core 3.2.6 is a transitive security pin for GHSA-7j59-v9qr-6fq9: Kiota's
@@ -41,6 +43,7 @@
     <ProjectReference Include="..\DemoReleaseChatPlugin.RazorComponents\DemoReleaseChatPlugin.RazorComponents.csproj" />
     <ProjectReference Include="..\Shared\DoverPort.AspNetCore.Common\DoverPort.AspNetCore.Common.csproj" />
     <ProjectReference Include="..\Shared\DoverPort.Common.Models\DoverPort.Common.Models.csproj" />
+    <ProjectReference Include="..\DemoReleaseChatPlugin.Assistant\DemoReleaseChatPlugin.Assistant.csproj" />
   </ItemGroup>
 
 

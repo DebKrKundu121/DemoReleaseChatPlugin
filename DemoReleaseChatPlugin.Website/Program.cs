@@ -2,6 +2,7 @@ using DemoReleaseChatPlugin.Application;
 using DemoReleaseChatPlugin.Infrastructure;
 using DemoReleaseChatPlugin.Website.Components;
 using DemoReleaseChatPlugin.Website.Infrastructure;
+using DemoReleaseChatPlugin.Website.Infrastructure.Assistant;
 using DoverPort.AspNetCore.Common.Configurations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Hosting;
@@ -22,6 +23,9 @@ var configuration = builder.Configuration;
 
 builder.AddDemoReleaseChatPluginApplication();
 builder.Services.AddWebsite(configuration);
+
+// The AI assistant. Off unless Assistant:Enabled is true; see AssistantDependencyInjection.
+builder.AddAssistant();
 
 var app = builder.Build();
 
