@@ -41,6 +41,8 @@ namespace DemoReleaseChatPlugin.Website.Infrastructure.Assistant
                 .Validate(o => !string.IsNullOrWhiteSpace(o.ApiKey),         "Assistant: AzureOpenAI:ApiKey is required when Assistant:Enabled is true")
                 .ValidateOnStart();
 
+            builder.Services.AddAssistantCore();
+
             builder.Services.AddChatClient(sp =>
                 {
                     var options = sp.GetRequiredService<IOptions<AzureOpenAiOptions>>().Value;
