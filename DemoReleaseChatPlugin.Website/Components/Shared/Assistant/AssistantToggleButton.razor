@@ -1,0 +1,11 @@
+@using DemoReleaseChatPlugin.Assistant
+@using Microsoft.Extensions.Options
+@inject IOptions<AssistantOptions> Options
+@inject AssistantPanelState PanelState
+
+@* Renders nothing when the assistant is switched off. *@
+@if (Options.Value.Enabled)
+{
+    <RadzenButton Icon="smart_toy" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                  Click="@PanelState.Toggle" title="AI Assistant" />
+}

@@ -1,0 +1,95 @@
+/* The AI assistant panel: docked to the right edge, full height, above the page. */
+
+.assistant-panel {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: min(420px, 100vw);
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    background: var(--rz-base-background-color, #fff);
+    border-left: 1px solid var(--rz-border-color, #e0e0e0);
+    box-shadow: -4px 0 16px rgba(0, 0, 0, 0.12);
+}
+
+.assistant-panel-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid var(--rz-border-color, #e0e0e0);
+}
+
+.assistant-panel-title {
+    flex: 1;
+    font-weight: 600;
+}
+
+.assistant-panel-disclaimer {
+    padding: 0.4rem 0.75rem;
+    font-size: 0.75rem;
+    color: var(--rz-text-secondary-color, #666);
+    background: var(--rz-base-100, #f7f7f7);
+}
+
+/* column-reverse anchors the scroll position to the bottom, so new messages stay in view. */
+.assistant-panel-transcript {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column-reverse;
+    padding: 0.75rem;
+}
+
+.assistant-empty {
+    color: var(--rz-text-secondary-color, #666);
+    font-size: 0.875rem;
+}
+
+.assistant-message {
+    margin-bottom: 0.75rem;
+    padding: 0.5rem 0.75rem;
+    border-radius: 8px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-size: 0.875rem;
+}
+
+.assistant-message-user {
+    margin-left: 2rem;
+    background: var(--rz-primary-lighter, #e3f2fd);
+}
+
+.assistant-message-assistant {
+    margin-right: 2rem;
+    background: var(--rz-base-200, #f1f1f1);
+}
+
+.assistant-message-error {
+    background: var(--rz-danger-lighter, #fdecea);
+}
+
+.assistant-thinking {
+    font-style: italic;
+    color: var(--rz-text-secondary-color, #666);
+}
+
+.assistant-panel-input {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    border-top: 1px solid var(--rz-border-color, #e0e0e0);
+}
+
+.assistant-input {
+    flex: 1;
+    resize: none;
+    padding: 0.4rem 0.5rem;
+    border: 1px solid var(--rz-border-color, #ccc);
+    border-radius: 4px;
+    font: inherit;
+    font-size: 0.875rem;
+}

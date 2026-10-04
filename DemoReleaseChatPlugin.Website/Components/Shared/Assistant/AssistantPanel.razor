@@ -1,0 +1,59 @@
+@inherits AssistantPanelBase
+
+@if (IsEnabled && PanelState.IsOpen && Session != null)
+{
+    <div id="@PanelElementId" class="assistant-panel">
+
+        <div class="assistant-panel-header">
+            <RadzenIcon Icon="smart_toy" />
+            <span class="assistant-panel-title">Assistant</span>
+            <RadzenButton Icon="delete_sweep" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                          Click="@Clear" title="Clear the conversation" />
+            <RadzenButton Icon="close" ButtonStyle="ButtonStyle.Light" Size="ButtonSize.Small"
+                          Click="@PanelState.Close" title="Close" />
+        </div>
+
+        <div class="assistant-panel-disclaimer">
+            AI-generated content — verify before acting. The assistant can only read data; it cannot make changes.
+        </div>
+
+        @* column-reverse keeps the view pinned to the newest message without any JavaScript. *@
+        <div class="assistant-panel-transcript">
+            <div>
+                @if (Session.Transcript.Count == 0)
+                {
+                    <p class="assistant-empty">Ask me a question about the applications and releases this system tracks.</p>
+                }
+
+                @foreach (var entry in Session.Transcript)
+                {
+                    <div class="assistant-message @RoleClass(entry)">
+                        @if (string.IsNullOrEmpty(entry.Text) && Session.IsBusy)
+                        {
+                            <span class="assistant-thinking">Thinking…</span>
+                        }
+                        else
+                        {
+                            @entry.Text
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="assistant-panel-input">
+            <textarea class="assistant-input"
+                      placeholder="Ask about projects and releases…"
+                      rows="2"
+                      maxlength="@MaxInputLength"
+                      disabled="@Session.IsBusy"
+                      @ref="InputRef"
+                      @bind="Input"
+                      @bind:event="oninput"
+                      @onkeydown="@OnInputKeyDown"></textarea>
+            <RadzenButton Icon="send" ButtonStyle="ButtonStyle.Primary" Size="ButtonSize.Small"
+                          Click="@SendAsync" Disabled="@(!CanSend)" title="Send (Enter)" />
+        </div>
+
+    </div>
+}

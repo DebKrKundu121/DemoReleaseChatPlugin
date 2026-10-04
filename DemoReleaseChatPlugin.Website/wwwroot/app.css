@@ -58,3 +58,10 @@ h1:focus {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
     text-align: start;
 }
+/* RadzenText sets its own dark colour per style (h6 = title colour, body2 = text colour), which is
+   near-invisible on the purple RadzenHeader. Inside the header, let it take the header's colour
+   (white) like the sidebar toggle and profile-menu chevron already do. */
+.rz-header .rz-text-h6,
+.rz-header .rz-text-body2 {
+    color: inherit;
+}

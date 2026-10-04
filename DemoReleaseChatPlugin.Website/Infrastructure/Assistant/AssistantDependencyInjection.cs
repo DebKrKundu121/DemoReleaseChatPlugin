@@ -2,6 +2,7 @@ using System;
 using Azure;
 using Azure.AI.OpenAI;
 using DemoReleaseChatPlugin.Assistant;
+using DemoReleaseChatPlugin.Website.Services.Assistant;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -26,6 +27,9 @@ namespace DemoReleaseChatPlugin.Website.Infrastructure.Assistant
 
             var azure = builder.Services.AddOptions<AzureOpenAiOptions>()
                 .Bind(builder.Configuration.GetSection(AzureOpenAiOptions.SectionName));
+
+            // Always registered — the header button and panel inject it even when switched off.
+            builder.Services.AddScoped<AssistantPanelState>();
 
             if (!assistant.Enabled)
             {
