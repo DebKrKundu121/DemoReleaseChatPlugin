@@ -14,4 +14,16 @@ public class TranscriptEntry
     public DateTimeOffset Timestamp { get; init; }
     public string ConversationId { get; init; }
     public int TurnNumber { get; init; }
+
+    /// The tools called while producing this reply, in order.
+    public List<ToolActivity> ToolActivities { get; } = new();
+}
+
+public class ToolActivity
+{
+    /// The raw name, e.g. "get_current_datetime" — the label's tooltip, for diagnosing answers.
+    public string ToolName { get; init; }
+
+    /// The friendly text, e.g. "Checking the date…" — what the user sees.
+    public string DisplayLabel { get; init; }
 }

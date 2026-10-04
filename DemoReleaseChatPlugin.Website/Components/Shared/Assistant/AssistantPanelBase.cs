@@ -37,6 +37,11 @@ namespace DemoReleaseChatPlugin.Website.Components.Shared.Assistant
         protected int MaxInputLength => Options.Value.MaxUserInputLength;
         protected bool CanSend => Session is { IsBusy: false } && !string.IsNullOrWhiteSpace(Input);
 
+        /// Busy, and the reply has no words yet: show what the assistant is doing instead.
+        protected bool IsWaitingForText => Session is { IsBusy: true }
+                                           && Session.Transcript.Count > 0
+                                           && string.IsNullOrEmpty(Session.Transcript[^1].Text);
+
         protected override async Task OnInitializedAsync()
         {
             if (!IsEnabled)

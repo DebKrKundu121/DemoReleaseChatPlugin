@@ -1,4 +1,5 @@
 using DemoReleaseChatPlugin.Assistant.Prompts;
+using DemoReleaseChatPlugin.Assistant.Tools;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -14,6 +15,7 @@ public sealed class AssistantChatSession
 {
     private readonly IChatClient _chatClient;
     private readonly SystemPromptBuilder _promptBuilder;
+    private readonly AssistantToolRegistry _toolRegistry;
     private readonly AssistantOptions _options;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<AssistantChatSession> _logger;
@@ -28,12 +30,14 @@ public sealed class AssistantChatSession
     public AssistantChatSession(
         IChatClient chatClient,
         SystemPromptBuilder promptBuilder,
+        AssistantToolRegistry toolRegistry,
         IOptions<AssistantOptions> options,
         TimeProvider timeProvider,
         ILogger<AssistantChatSession> logger)
     {
         _chatClient = chatClient;
         _promptBuilder = promptBuilder;
+        _toolRegistry = toolRegistry;
         _options = options.Value;
         _timeProvider = timeProvider;
         _logger = logger;
@@ -41,6 +45,9 @@ public sealed class AssistantChatSession
 
     public IReadOnlyList<TranscriptEntry> Transcript => _transcript;
     public bool IsBusy { get; private set; }
+
+    /// What the assistant is doing right now, e.g. "Checking the date…". Null once text starts arriving.
+    public string CurrentActivity { get; private set; }
 
     /// Set by the host once the signed-in user is known.
     public AssistantUser CurrentUser { get; set; } = AssistantUser.Unknown;
@@ -80,8 +87,11 @@ public sealed class AssistantChatSession
             var messages = new List<ChatMessage> { new(ChatRole.System, _promptBuilder.Build(CurrentUser)) };
             messages.AddRange(_history);
 
+            // The tool loop (UseFunctionInvocation on the chat client) runs whatever the model calls
+            // from this list and feeds the results back; this session never dispatches a tool itself.
             var chatOptions = new ChatOptions
             {
+                Tools = _toolRegistry.BuildTools().ToList(),
                 MaxOutputTokens = _options.MaxOutputTokens,
                 Temperature = _options.Temperature
             };
@@ -92,11 +102,22 @@ public sealed class AssistantChatSession
             {
                 updates.Add(update);
 
+                // The tool loop passes the model's tool-call requests through the stream before it
+                // runs them, so they can be recorded here as they happen.
+                foreach (var call in update.Contents.OfType<FunctionCallContent>())
+                {
+                    var label = ToolNames.DisplayLabel(call.Name);
+                    assistantEntry.ToolActivities.Add(new ToolActivity { ToolName = call.Name, DisplayLabel = label });
+                    CurrentActivity = label;
+                }
+
                 if (!string.IsNullOrEmpty(update.Text))
                 {
                     assistantEntry.Text += update.Text;
-                    NotifyChanged();
+                    CurrentActivity = null;         // text has started, so the activity line goes away
                 }
+
+                NotifyChanged();
             }
 
             // Collapses the whole stream back into history in one go. Don't hand-build messages from
@@ -135,6 +156,7 @@ public sealed class AssistantChatSession
         finally
         {
             IsBusy = false;
+            CurrentActivity = null;
             _cts.Dispose();
             _cts = null;
             NotifyChanged();

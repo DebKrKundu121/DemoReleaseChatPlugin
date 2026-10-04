@@ -27,15 +27,28 @@
 
                 @foreach (var entry in Session.Transcript)
                 {
-                    <div class="assistant-message @RoleClass(entry)">
-                        @if (string.IsNullOrEmpty(entry.Text) && Session.IsBusy)
-                        {
-                            <span class="assistant-thinking">Thinking…</span>
-                        }
-                        else
-                        {
-                            @entry.Text
-                        }
+                    @* A reply still waiting for its first words has no bubble yet — the activity line stands in for it. *@
+                    @if (!string.IsNullOrEmpty(entry.Text))
+                    {
+                        <div class="assistant-message @RoleClass(entry)">@entry.Text</div>
+                    }
+
+                    @if (entry.ToolActivities.Count > 0)
+                    {
+                        <div class="assistant-tool-chips">
+                            @foreach (var activity in entry.ToolActivities)
+                            {
+                                <span class="assistant-tool-chip" title="@activity.ToolName">@activity.DisplayLabel</span>
+                            }
+                        </div>
+                    }
+                }
+
+                @if (IsWaitingForText)
+                {
+                    <div class="assistant-activity">
+                        <span class="assistant-activity-dot"></span>
+                        <span>@(Session.CurrentActivity ?? "Thinking…")</span>
                     </div>
                 }
             </div>

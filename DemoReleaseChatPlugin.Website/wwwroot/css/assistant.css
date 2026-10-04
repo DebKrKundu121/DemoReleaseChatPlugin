@@ -71,9 +71,46 @@
     background: var(--rz-danger-lighter, #fdecea);
 }
 
-.assistant-thinking {
+/* Labels under a reply naming the tools it used. */
+.assistant-tool-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem;
+    margin: -0.5rem 2rem 0.75rem 0;
+}
+
+.assistant-tool-chip {
+    padding: 0.1rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    color: var(--rz-text-secondary-color, #666);
+    background: var(--rz-base-100, #f7f7f7);
+    border: 1px solid var(--rz-border-color, #e0e0e0);
+    cursor: default;
+}
+
+/* "Checking the date…" while a reply has no words yet. */
+.assistant-activity {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.8rem;
     font-style: italic;
     color: var(--rz-text-secondary-color, #666);
+}
+
+.assistant-activity-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+    background: var(--rz-primary, #1b6ec2);
+    animation: assistant-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes assistant-pulse {
+    0%, 100% { opacity: 0.3; }
+    50% { opacity: 1; }
 }
 
 .assistant-panel-input {
