@@ -48,6 +48,24 @@
     font-size: 0.875rem;
 }
 
+.assistant-starter {
+    display: block;
+    width: 100%;
+    margin-bottom: 0.4rem;
+    padding: 0.4rem 0.6rem;
+    text-align: left;
+    font-size: 0.85rem;
+    color: inherit;
+    background: var(--rz-base-100, #f7f7f7);
+    border: 1px solid var(--rz-border-color, #e0e0e0);
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.assistant-starter:hover {
+    background: var(--rz-base-200, #eee);
+}
+
 .assistant-message {
     margin-bottom: 0.75rem;
     padding: 0.5rem 0.75rem;

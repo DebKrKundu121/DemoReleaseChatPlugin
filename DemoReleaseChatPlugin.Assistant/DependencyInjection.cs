@@ -16,6 +16,7 @@ public static class DependencyInjection
 
         // Tools — scoped, one per circuit, like the session that uses them.
         services.AddScoped<SystemTools>();
+        services.AddScoped<ReleaseTools>();
         services.AddScoped<AssistantToolRegistry>();
 
         // One conversation per circuit (browser tab).

@@ -5,11 +5,17 @@ namespace DemoReleaseChatPlugin.Assistant.Tools;
 public static class ToolNames
 {
     public const string GetCurrentDateTime = "get_current_datetime";
+    public const string ListProjects = "list_projects";
+    public const string GetReleaseHistory = "get_release_history";
+    public const string GetLatestRelease = "get_latest_release";
 
     /// What the user sees while a tool runs, and on the label under the answer.
     public static string DisplayLabel(string toolName) => toolName switch
     {
         GetCurrentDateTime => "Checking the date…",
+        ListProjects => "Listing projects…",
+        GetReleaseHistory => "Checking release history…",
+        GetLatestRelease => "Checking the latest release…",
         _ => "Looking things up…"
     };
 }

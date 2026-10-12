@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using DemoReleaseChatPlugin.Application.Authorization;
 using DemoReleaseChatPlugin.Application.Releases;
 using DemoReleaseChatPlugin.Assistant;
 using DemoReleaseChatPlugin.Assistant.Chat;
@@ -32,6 +33,7 @@ namespace DemoReleaseChatPlugin.Website.Components.Shared.Assistant
         protected ElementReference InputRef;
 
         private bool _wasOpen;
+        private AssistantCapabilities _capabilities = AssistantCapabilities.None;
 
         protected bool IsEnabled => Options.Value.Enabled;
         protected int MaxInputLength => Options.Value.MaxUserInputLength;
@@ -65,6 +67,10 @@ namespace DemoReleaseChatPlugin.Website.Components.Shared.Assistant
                 .ToList();
 
             Session.CurrentUser = new AssistantUser(actor.UserId, actor.DisplayName, roles);
+
+            // The same rule as the release pages: IT Admins only.
+            _capabilities = new AssistantCapabilities(
+                CanAccessReleases: authState.User.IsInRole(RoleConstants.ItAdmin));
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -91,7 +97,7 @@ namespace DemoReleaseChatPlugin.Website.Components.Shared.Assistant
             var text = Input;
             Input = string.Empty;          // cleared before the await, so the box empties immediately
 
-            await Session.SendAsync(text);
+            await Session.SendAsync(text, _capabilities);
         }
 
         /// Enter sends, Shift+Enter is a newline. assistant-window.js stops Enter inserting a newline.
@@ -101,6 +107,23 @@ namespace DemoReleaseChatPlugin.Website.Components.Shared.Assistant
             {
                 await SendAsync();
             }
+        }
+
+        /// One per kind of question, so the user learns the shape of a good one. Only for users who
+        /// have the release tools — anyone else would just be told they lack access.
+        protected string[] StarterPrompts => _capabilities.CanAccessReleases
+            ? new[]
+            {
+                "What projects are there?",
+                "What version is each project on?",
+                "Which releases were rolled back this year?"
+            }
+            : Array.Empty<string>();
+
+        protected async Task SendStarterAsync(string prompt)
+        {
+            Input = prompt;
+            await SendAsync();
         }
 
         protected void Clear() => Session.Clear();

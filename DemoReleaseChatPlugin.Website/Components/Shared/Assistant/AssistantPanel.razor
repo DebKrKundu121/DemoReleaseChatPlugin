@@ -22,7 +22,19 @@
             <div>
                 @if (Session.Transcript.Count == 0)
                 {
-                    <p class="assistant-empty">Ask me a question about the applications and releases this system tracks.</p>
+                    <div class="assistant-empty">
+                        <p>Ask me a question about the applications and releases this system tracks.</p>
+
+                        @if (StarterPrompts.Length > 0)
+                        {
+                            <p>For example:</p>
+                            @foreach (var prompt in StarterPrompts)
+                            {
+                                var text = prompt;   @* copy for the closure *@
+                                <button type="button" class="assistant-starter" @onclick="@(() => SendStarterAsync(text))">@text</button>
+                            }
+                        }
+                    </div>
                 }
 
                 @foreach (var entry in Session.Transcript)

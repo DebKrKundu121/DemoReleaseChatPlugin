@@ -55,7 +55,8 @@ public sealed class AssistantChatSession
     /// Raised after every change, including each streamed fragment, so the panel can re-render.
     public event Action Changed;
 
-    public async Task SendAsync(string userText, CancellationToken cancellationToken = default)
+    /// capabilities decides which tools are offered this turn — see AssistantToolRegistry.
+    public async Task SendAsync(string userText, AssistantCapabilities capabilities, CancellationToken cancellationToken = default)
     {
         if (IsBusy || string.IsNullOrWhiteSpace(userText))
         {
@@ -84,14 +85,16 @@ public sealed class AssistantChatSession
 
         try
         {
-            var messages = new List<ChatMessage> { new(ChatRole.System, _promptBuilder.Build(CurrentUser)) };
+            capabilities ??= AssistantCapabilities.None;
+
+            var messages = new List<ChatMessage> { new(ChatRole.System, _promptBuilder.Build(CurrentUser, capabilities)) };
             messages.AddRange(_history);
 
             // The tool loop (UseFunctionInvocation on the chat client) runs whatever the model calls
             // from this list and feeds the results back; this session never dispatches a tool itself.
             var chatOptions = new ChatOptions
             {
-                Tools = _toolRegistry.BuildTools().ToList(),
+                Tools = _toolRegistry.BuildTools(capabilities).ToList(),
                 MaxOutputTokens = _options.MaxOutputTokens,
                 Temperature = _options.Temperature
             };
