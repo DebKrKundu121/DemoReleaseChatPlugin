@@ -121,6 +121,12 @@ public sealed class Project : Entity<ProjectId>, IAggregateRoot
             ? Result.Error("This project is archived, so releases cannot be filed against it.")
             : Result.OK();
 
+    /// The same rule for documents: an archived project is a closed record.
+    internal Result EnsureCanTakeDocuments() =>
+        IsArchived
+            ? Result.Error("This project is archived, so documents cannot be attached to it.")
+            : Result.OK();
+
     private void Stamp(Actor actor, IClock clock)
     {
         ModifiedOn = clock.Now;

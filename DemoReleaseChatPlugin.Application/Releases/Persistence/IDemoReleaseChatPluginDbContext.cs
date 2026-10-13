@@ -28,6 +28,7 @@ public interface IDemoReleaseChatPluginDbContext
     DbSet<ScheduledRelease> ScheduledReleases { get; }
     DbSet<LiveRelease> LiveReleases { get; }
     DbSet<Rollback> Rollbacks { get; }
+    DbSet<ProjectDocument> ProjectDocuments { get; }
 
     DbSet<DomainEventRecord> DomainEvents { get; }
     DbSet<HistoryRecord> HistoryRecords { get; }

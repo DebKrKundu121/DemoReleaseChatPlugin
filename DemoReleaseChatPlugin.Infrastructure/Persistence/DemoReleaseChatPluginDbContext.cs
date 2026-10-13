@@ -20,6 +20,7 @@ public class DemoReleaseChatPluginDbContext : DbContext, IDemoReleaseChatPluginD
     public DbSet<ScheduledRelease> ScheduledReleases { get; set; }
     public DbSet<LiveRelease> LiveReleases { get; set; }
     public DbSet<Rollback> Rollbacks { get; set; }
+    public DbSet<ProjectDocument> ProjectDocuments { get; set; }
 
     public DbSet<DomainEventRecord> DomainEvents { get; set; }
     public DbSet<HistoryRecord> HistoryRecords { get; set; }

@@ -214,6 +214,101 @@ namespace DemoReleaseChatPlugin.Infrastructure.Migrations
                     b.ToTable("Projects", "Releases");
                 });
 
+            modelBuilder.Entity("DemoReleaseChatPlugin.Domain.Releases.ProjectDocument", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("Id");
+
+                    b.Property<string>("AddedBy")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)")
+                        .HasColumnName("AddedBy");
+
+                    b.Property<string>("AddedByUserId")
+                        .IsRequired()
+                        .HasMaxLength(64)
+                        .HasColumnType("nvarchar(64)")
+                        .HasColumnName("AddedByUserId");
+
+                    b.Property<DateTime>("AddedOn")
+                        .HasColumnType("datetime2(3)")
+                        .HasColumnName("AddedOn");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)")
+                        .HasColumnName("ContentType");
+
+                    b.Property<string>("Entities")
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("Entities");
+
+                    b.Property<string>("ExtractedText")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)")
+                        .HasColumnName("ExtractedText");
+
+                    b.Property<string>("FileName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)")
+                        .HasColumnName("FileName");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)")
+                        .HasColumnName("Kind");
+
+                    b.Property<decimal?>("MatchConfidence")
+                        .HasPrecision(4, 3)
+                        .HasColumnType("decimal(4,3)")
+                        .HasColumnName("MatchConfidence");
+
+                    b.Property<string>("MatchReason")
+                        .HasMaxLength(1000)
+                        .HasColumnType("nvarchar(1000)")
+                        .HasColumnName("MatchReason");
+
+                    b.Property<string>("NerProvider")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("NerProvider");
+
+                    b.Property<string>("OcrProvider")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)")
+                        .HasColumnName("OcrProvider");
+
+                    b.Property<int>("PageCount")
+                        .HasColumnType("int")
+                        .HasColumnName("PageCount");
+
+                    b.Property<Guid>("ProjectId")
+                        .HasColumnType("uniqueidentifier")
+                        .HasColumnName("ProjectId");
+
+                    b.Property<long>("SizeBytes")
+                        .HasColumnType("bigint")
+                        .HasColumnName("SizeBytes");
+
+                    b.Property<string>("Summary")
+                        .HasMaxLength(2000)
+                        .HasColumnType("nvarchar(2000)")
+                        .HasColumnName("Summary");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ProjectId", "AddedOn")
+                        .HasDatabaseName("IX_ProjectDocuments_ProjectId_AddedOn");
+
+                    b.ToTable("ProjectDocuments", "Releases");
+                });
+
             modelBuilder.Entity("DemoReleaseChatPlugin.Domain.Releases.ReleaseNotice", b =>
                 {
                     b.Property<Guid>("Id")
@@ -514,6 +609,15 @@ namespace DemoReleaseChatPlugin.Infrastructure.Migrations
                         .HasDatabaseName("IX_ReleaseNotices_ScheduledFor");
 
                     b.HasDiscriminator().HasValue("Scheduled");
+                });
+
+            modelBuilder.Entity("DemoReleaseChatPlugin.Domain.Releases.ProjectDocument", b =>
+                {
+                    b.HasOne("DemoReleaseChatPlugin.Domain.Releases.Project", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("DemoReleaseChatPlugin.Domain.Releases.ReleaseNotice", b =>

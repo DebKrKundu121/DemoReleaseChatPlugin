@@ -364,3 +364,52 @@ END;
 COMMIT;
 GO
 
+BEGIN TRANSACTION;
+IF NOT EXISTS (
+    SELECT * FROM [dbo].[__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261013220908_Add_ProjectDocuments'
+)
+BEGIN
+    CREATE TABLE [Releases].[ProjectDocuments] (
+        [Id] uniqueidentifier NOT NULL,
+        [ProjectId] uniqueidentifier NOT NULL,
+        [FileName] nvarchar(255) NOT NULL,
+        [ContentType] nvarchar(100) NOT NULL,
+        [SizeBytes] bigint NOT NULL,
+        [Kind] nvarchar(20) NOT NULL,
+        [PageCount] int NOT NULL,
+        [Summary] nvarchar(2000) NULL,
+        [ExtractedText] nvarchar(max) NOT NULL,
+        [Entities] nvarchar(max) NULL,
+        [OcrProvider] nvarchar(50) NULL,
+        [NerProvider] nvarchar(50) NOT NULL,
+        [MatchConfidence] decimal(4,3) NULL,
+        [MatchReason] nvarchar(1000) NULL,
+        [AddedOn] datetime2(3) NOT NULL,
+        [AddedBy] nvarchar(120) NOT NULL,
+        [AddedByUserId] nvarchar(64) NOT NULL,
+        CONSTRAINT [PK_ProjectDocuments] PRIMARY KEY ([Id]),
+        CONSTRAINT [FK_ProjectDocuments_Projects_ProjectId] FOREIGN KEY ([ProjectId]) REFERENCES [Releases].[Projects] ([Id]) ON DELETE NO ACTION
+    );
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [dbo].[__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261013220908_Add_ProjectDocuments'
+)
+BEGIN
+    CREATE INDEX [IX_ProjectDocuments_ProjectId_AddedOn] ON [Releases].[ProjectDocuments] ([ProjectId], [AddedOn]);
+END;
+
+IF NOT EXISTS (
+    SELECT * FROM [dbo].[__EFMigrationsHistory]
+    WHERE [MigrationId] = N'20261013220908_Add_ProjectDocuments'
+)
+BEGIN
+    INSERT INTO [dbo].[__EFMigrationsHistory] ([MigrationId], [ProductVersion])
+    VALUES (N'20261013220908_Add_ProjectDocuments', N'10.0.2');
+END;
+
+COMMIT;
+GO
+

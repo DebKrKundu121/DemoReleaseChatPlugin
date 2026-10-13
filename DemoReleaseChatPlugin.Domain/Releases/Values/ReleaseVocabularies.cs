@@ -65,3 +65,22 @@ public sealed class ReleaseNoticeKind : ValueOptions<ReleaseNoticeKind>
     /// <summary>A notice describing something that has already happened, rather than a plan.</summary>
     public bool HasAlreadyHappened => this != Scheduled;
 }
+
+/// <summary>
+/// What kind of file a project document came from. It decides how its text was read: a digital PDF,
+/// Word file or text file already contains text, so only <see cref="ScannedPdf"/> and
+/// <see cref="Image"/> go through OCR.
+/// </summary>
+[JsonConverter(typeof(ValueOptionsJsonConverterFactory))]
+public sealed class DocumentKind : ValueOptions<DocumentKind>
+{
+    public static readonly DocumentKind DigitalPdf = new("DigitalPdf");
+    public static readonly DocumentKind ScannedPdf = new("ScannedPdf");
+    public static readonly DocumentKind Image = new("Image");
+    public static readonly DocumentKind Word = new("Word");
+    public static readonly DocumentKind Text = new("Text");
+
+    private DocumentKind(string value) : base(value) { }
+
+    public bool NeedsOcr => this == ScannedPdf || this == Image;
+}

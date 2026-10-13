@@ -62,3 +62,12 @@ public sealed record StakeholderId(Guid Value) : GuidId<StakeholderId>(Value)
 
     public static readonly StakeholderId Empty = new(Guid.Empty);
 }
+
+[JsonConverter(typeof(GuidIdJsonConverterFactory))]
+public sealed record ProjectDocumentId(Guid Value) : GuidId<ProjectDocumentId>(Value)
+{
+    public static ProjectDocumentId New() => new(Guid.CreateVersion7());
+    public static ProjectDocumentId From(Guid value) => new(value);
+
+    public static readonly ProjectDocumentId Empty = new(Guid.Empty);
+}
