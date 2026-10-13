@@ -198,3 +198,109 @@
     font: inherit;
     font-size: 0.875rem;
 }
+
+/* "Open workspace" under a reply that produced a report. */
+.assistant-open-report {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin: -0.5rem 0 0.75rem 0;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.8rem;
+    color: var(--rz-primary, #1b6ec2);
+    background: transparent;
+    border: 1px solid var(--rz-primary, #1b6ec2);
+    border-radius: 999px;
+    cursor: pointer;
+}
+
+.assistant-open-report .rzi {
+    font-size: 1rem;
+}
+
+.assistant-open-report:hover {
+    background: var(--rz-base-100, #f7f7f7);
+}
+
+/* The workspace page: one section per presented component. */
+.assistant-canvas-meta,
+.assistant-canvas-empty {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--rz-text-secondary-color, #666);
+}
+
+.assistant-canvas-section {
+    padding: 1rem;
+    border: 1px solid var(--rz-border-color, #e0e0e0);
+    border-radius: 6px;
+    background: var(--rz-base-background-color, #fff);
+}
+
+.assistant-canvas-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.75rem;
+}
+
+.assistant-canvas-title {
+    margin: 0;
+}
+
+/* The provenance signal: green when the rows are the system's own, amber when the model typed them. */
+.assistant-canvas-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.1rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: default;
+}
+
+.assistant-canvas-chip .rzi {
+    font-size: 0.95rem;
+}
+
+.assistant-canvas-chip-verified {
+    color: #1e6b34;
+    background: #e3f4e8;
+    border: 1px solid #9fd3ad;
+}
+
+.assistant-canvas-chip-unverified {
+    color: #7a4b00;
+    background: #fff3d6;
+    border: 1px solid #f0c96b;
+}
+
+.assistant-canvas-table-wrap {
+    overflow-x: auto;
+}
+
+.assistant-canvas-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.assistant-canvas-table th,
+.assistant-canvas-table td {
+    padding: 0.4rem 0.6rem;
+    text-align: left;
+    vertical-align: top;
+    border-bottom: 1px solid var(--rz-border-color, #e0e0e0);
+}
+
+.assistant-canvas-table th {
+    font-weight: 600;
+    white-space: nowrap;
+    background: var(--rz-base-100, #f7f7f7);
+}
+
+.assistant-canvas-table tbody tr:hover {
+    background: var(--rz-base-50, #fafafa);
+}

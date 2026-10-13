@@ -2,6 +2,7 @@ using System;
 using Azure;
 using Azure.AI.OpenAI;
 using DemoReleaseChatPlugin.Assistant;
+using DemoReleaseChatPlugin.Assistant.Canvas;
 using DemoReleaseChatPlugin.Website.Services.Assistant;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Configuration;
@@ -28,8 +29,11 @@ namespace DemoReleaseChatPlugin.Website.Infrastructure.Assistant
             var azure = builder.Services.AddOptions<AzureOpenAiOptions>()
                 .Bind(builder.Configuration.GetSection(AzureOpenAiOptions.SectionName));
 
-            // Always registered — the header button and panel inject it even when switched off.
+            // Always registered — the header button, panel and workspace page inject them even when
+            // switched off. One workspace instance per circuit, reachable as either type.
             builder.Services.AddScoped<AssistantPanelState>();
+            builder.Services.AddScoped<AssistantWorkspaceState>();
+            builder.Services.AddScoped<IAssistantWorkspace>(sp => sp.GetRequiredService<AssistantWorkspaceState>());
 
             if (!assistant.Enabled)
             {

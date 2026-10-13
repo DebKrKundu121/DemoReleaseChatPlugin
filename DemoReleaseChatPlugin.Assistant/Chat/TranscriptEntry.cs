@@ -1,3 +1,5 @@
+using DemoReleaseChatPlugin.Assistant.Canvas;
+
 namespace DemoReleaseChatPlugin.Assistant.Chat;
 
 public enum TranscriptRole { User, Assistant }
@@ -17,6 +19,10 @@ public class TranscriptEntry
 
     /// The tools called while producing this reply, in order.
     public List<ToolActivity> ToolActivities { get; } = new();
+
+    /// The workspace report this reply produced or extended, so it can be re-opened later. Set by the
+    /// host; null when the reply presented nothing. Each snapshot is immutable — later answers can't change it.
+    public IReadOnlyList<AssistantPresentation> Presentations { get; set; }
 }
 
 public class ToolActivity

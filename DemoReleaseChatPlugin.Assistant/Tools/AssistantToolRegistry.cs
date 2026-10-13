@@ -5,7 +5,7 @@ namespace DemoReleaseChatPlugin.Assistant.Tools;
 /// Builds the tools offered to the model. Called fresh on every turn, so a capability change takes
 /// effect immediately. The gate is omission, not refusal: a tool the user may not use is never
 /// offered, so there is nothing to talk the model into.
-public sealed class AssistantToolRegistry(SystemTools systemTools, ReleaseTools releaseTools)
+public sealed class AssistantToolRegistry(SystemTools systemTools, PresentationTools presentationTools, ReleaseTools releaseTools)
 {
     public IReadOnlyList<AITool> BuildTools(AssistantCapabilities capabilities)
     {
@@ -15,7 +15,9 @@ public sealed class AssistantToolRegistry(SystemTools systemTools, ReleaseTools 
         // Always available: they reach no protected data of their own.
         var tools = new List<AITool>
         {
-            AIFunctionFactory.Create(systemTools.GetCurrentDateTime, ToolNames.GetCurrentDateTime)
+            AIFunctionFactory.Create(systemTools.GetCurrentDateTime,      ToolNames.GetCurrentDateTime),
+            AIFunctionFactory.Create(presentationTools.StartNewReport,    ToolNames.StartNewReport),
+            AIFunctionFactory.Create(presentationTools.PresentTable,      ToolNames.PresentTable)
         };
 
         if (capabilities.CanAccessReleases)

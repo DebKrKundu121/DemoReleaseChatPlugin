@@ -1,0 +1,96 @@
+@page "/assistant/workspace"
+@inherits AssistantWorkspaceBase
+
+@* The route matches AssistantWorkspaceState.Route, which the panel navigates to. *@
+
+<PageTitle>Assistant workspace</PageTitle>
+
+<RadzenStack Orientation="Orientation.Vertical" Gap="1rem">
+
+    <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center"
+                 JustifyContent="JustifyContent.SpaceBetween">
+        <h4 class="mb-0">Assistant workspace</h4>
+        <RadzenStack Orientation="Orientation.Horizontal" AlignItems="AlignItems.Center" Gap="0.75rem">
+            @if (HasContent && GeneratedAt.HasValue)
+            {
+                <span class="assistant-canvas-meta">Generated @GeneratedAt.Value.ToString("dd/MM/yyyy HH:mm")</span>
+            }
+            <RadzenButton Icon="arrow_back" Text="Back" ButtonStyle="ButtonStyle.Light" Click="@GoBack" />
+        </RadzenStack>
+    </RadzenStack>
+
+    @if (!HasContent)
+    {
+        <p class="assistant-canvas-empty">
+            Nothing here yet. Ask the assistant for a table of records — for example
+            "show me every release that was rolled back this year" — and it will render it here.
+        </p>
+    }
+    else
+    {
+        <p class="assistant-canvas-meta">
+            AI-assembled report. <strong>Verified</strong> tables are the system's own data, unchanged;
+            <strong>Unverified</strong> ones were typed by the assistant — check them before acting.
+        </p>
+
+        @foreach (var component in Components)
+        {
+            <section @key="component" class="assistant-canvas-section">
+
+                <div class="assistant-canvas-header">
+                    <h5 class="assistant-canvas-title">@component.Title</h5>
+
+                    @if (IsTable(component))
+                    {
+                        @if (component.Table.Verified)
+                        {
+                            <span class="assistant-canvas-chip assistant-canvas-chip-verified"
+                                  title="Taken directly from the system's data">
+                                <RadzenIcon Icon="verified" /> Verified
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="assistant-canvas-chip assistant-canvas-chip-unverified"
+                                  title="Typed by the assistant — check against the source">
+                                <RadzenIcon Icon="warning" /> Unverified
+                            </span>
+                        }
+
+                        <span class="assistant-canvas-meta">@component.Table.Rows.Count row@(component.Table.Rows.Count == 1 ? "" : "s")</span>
+                    }
+                </div>
+
+                @if (IsTable(component))
+                {
+                    @* Plain text cells: Blazor encodes them, so nothing the data contains can become markup. *@
+                    <div class="assistant-canvas-table-wrap">
+                        <table class="assistant-canvas-table">
+                            <thead>
+                                <tr>
+                                    @foreach (var column in component.Table.Columns)
+                                    {
+                                        <th>@column</th>
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var row in component.Table.Rows)
+                                {
+                                    <tr>
+                                        @foreach (var cell in row)
+                                        {
+                                            <td>@cell</td>
+                                        }
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+
+            </section>
+        }
+    }
+
+</RadzenStack>

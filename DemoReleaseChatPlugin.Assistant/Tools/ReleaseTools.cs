@@ -3,6 +3,7 @@ using System.Globalization;
 using DemoReleaseChatPlugin.Application.Releases.Notices.GetApplicationReleases;
 using DemoReleaseChatPlugin.Application.Releases.Notices.GetReleaseHistory;
 using DemoReleaseChatPlugin.Application.Releases.Projects.GetProjects;
+using DemoReleaseChatPlugin.Assistant.Canvas;
 using DemoReleaseChatPlugin.Domain.Releases.Values;
 using Mediator;
 
@@ -12,7 +13,10 @@ namespace DemoReleaseChatPlugin.Assistant.Tools;
 ///
 /// Every tool goes through the same Mediator query the pages use — no tool has data access of its own,
 /// so the assistant sees exactly what a person would, with the same rules applied.
-public sealed class ReleaseTools(ISender sender)
+///
+/// The list tools also stash their rows in the workspace data store and return its 'source' token, so
+/// present_table can show the real rows as a Verified table without the model re-typing them.
+public sealed class ReleaseTools(ISender sender, IWorkspaceDataStore dataStore)
 {
     public const int MaxNotices = 50;
 
@@ -36,12 +40,8 @@ public sealed class ReleaseTools(ISender sender)
                 return ToolExecutor.Error(result);
             }
 
-            var projects = result.Value.Projects;
-
-            return new
-            {
-                total = projects.Count,
-                projects = projects.Select(p => new
+            var projects = result.Value.Projects
+                .Select(p => new
                 {
                     id = p.Id.Value,
                     name = p.Name,
@@ -50,6 +50,13 @@ public sealed class ReleaseTools(ISender sender)
                     stakeholders = p.StakeholderCount,
                     releases = p.ReleaseCount
                 })
+                .ToList();
+
+            return new
+            {
+                total = projects.Count,
+                source = dataStore.StashRows(projects, "id"),      // the id is for tools, not people
+                projects
             };
         });
 
@@ -103,14 +110,9 @@ public sealed class ReleaseTools(ISender sender)
             }
 
             var all = result.Value.Notices;
-            var shown = all.Take(MaxNotices).ToList();
-
-            return new
-            {
-                total = all.Count,
-                returned = shown.Count,
-                truncated = all.Count > shown.Count,
-                notices = shown.Select(n => new
+            var notices = all
+                .Take(MaxNotices)
+                .Select(n => new
                 {
                     kind = n.Kind,
                     project = n.ProjectName,
@@ -123,6 +125,15 @@ public sealed class ReleaseTools(ISender sender)
                     filedOn = Date(n.CreatedOn),
                     detail = Trim(n.Detail)
                 })
+                .ToList();
+
+            return new
+            {
+                total = all.Count,
+                returned = notices.Count,
+                truncated = all.Count > notices.Count,
+                source = dataStore.StashRows(notices, "detail"),   // prose would swamp the grid
+                notices
             };
         });
 

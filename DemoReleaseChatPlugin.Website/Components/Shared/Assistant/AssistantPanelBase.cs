@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using DemoReleaseChatPlugin.Application.Authorization;
 using DemoReleaseChatPlugin.Application.Releases;
 using DemoReleaseChatPlugin.Assistant;
+using DemoReleaseChatPlugin.Assistant.Canvas;
 using DemoReleaseChatPlugin.Assistant.Chat;
 using DemoReleaseChatPlugin.Website.Services.Assistant;
 using Microsoft.AspNetCore.Components;
@@ -23,6 +25,8 @@ namespace DemoReleaseChatPlugin.Website.Components.Shared.Assistant
         [Inject] protected IServiceProvider ServiceProvider { get; set; }
         [Inject] protected IOptions<AssistantOptions> Options { get; set; }
         [Inject] protected AssistantPanelState PanelState { get; set; }
+        [Inject] protected AssistantWorkspaceState Workspace { get; set; }
+        [Inject] protected NavigationManager Navigation { get; set; }
         [Inject] protected ICurrentUserProvider CurrentUser { get; set; }
         [Inject] protected IJSRuntime JS { get; set; }
 
@@ -33,6 +37,7 @@ namespace DemoReleaseChatPlugin.Website.Components.Shared.Assistant
         protected ElementReference InputRef;
 
         private bool _wasOpen;
+        private IReadOnlyList<AssistantPresentation> _lastReport;
         private AssistantCapabilities _capabilities = AssistantCapabilities.None;
 
         protected bool IsEnabled => Options.Value.Enabled;
@@ -57,6 +62,7 @@ namespace DemoReleaseChatPlugin.Website.Components.Shared.Assistant
 
             Session.Changed += OnStateChanged;
             PanelState.Changed += OnStateChanged;
+            Workspace.Changed += OnWorkspaceChanged;
 
             var actor = await CurrentUser.ProvideAsync();
             var authState = await AuthenticationState;
@@ -114,7 +120,7 @@ namespace DemoReleaseChatPlugin.Website.Components.Shared.Assistant
         protected string[] StarterPrompts => _capabilities.CanAccessReleases
             ? new[]
             {
-                "What projects are there?",
+                "List every project as a table",
                 "What version is each project on?",
                 "Which releases were rolled back this year?"
             }
@@ -126,7 +132,92 @@ namespace DemoReleaseChatPlugin.Website.Components.Shared.Assistant
             await SendAsync();
         }
 
-        protected void Clear() => Session.Clear();
+        protected void Clear()
+        {
+            Session.Clear();
+            Workspace.Clear();
+        }
+
+        /// Re-opens the report an earlier answer produced. Display changes only Current, so this
+        /// doesn't count as a new report and won't re-trigger the auto-open.
+        protected void OpenReport(IReadOnlyList<AssistantPresentation> components)
+        {
+            if (components is null || components.Count == 0)
+            {
+                return;
+            }
+
+            Workspace.Display(components);
+            OpenWorkspace();
+        }
+
+        /// A fresh report opens the workspace ONCE — on its first component. Later components grow the
+        /// same report while the user is already looking at it.
+        private void OnWorkspaceChanged() => _ = InvokeAsync(() =>
+        {
+            var latest = Workspace.Latest;
+
+            if (latest.Count > 0 && !ReferenceEquals(latest, _lastReport))
+            {
+                var firstComponentOfReport = _lastReport is null || _lastReport.Count == 0 || !SameReport(latest, _lastReport);
+                _lastReport = latest;
+                StampCurrentTurn(latest);
+
+                if (firstComponentOfReport && !IsOnWorkspace)
+                {
+                    OpenWorkspace();
+                }
+            }
+            else if (latest.Count == 0)
+            {
+                _lastReport = latest;
+            }
+
+            StateHasChanged();
+        });
+
+        private void OpenWorkspace()
+        {
+            if (!IsOnWorkspace)
+            {
+                Workspace.ReturnUri = Navigation.Uri;
+                Navigation.NavigateTo("/" + AssistantWorkspaceState.Route);
+            }
+
+            PanelState.Close();      // hide the chat so the report gets the full screen
+        }
+
+        /// Links the report to the reply being written, for its "Open workspace" link. Each Show is a
+        /// new snapshot, so the last stamp of the turn is the whole report.
+        private void StampCurrentTurn(IReadOnlyList<AssistantPresentation> report)
+        {
+            if (Session is { IsBusy: true, Transcript.Count: > 0 } && Session.Transcript[^1].Role == TranscriptRole.Assistant)
+            {
+                Session.Transcript[^1].Presentations = report;
+            }
+        }
+
+        /// Two snapshots are the same report when one is a prefix of the other — a report only ever
+        /// grows by appending. So a report built table → table navigates once, not twice.
+        private static bool SameReport(IReadOnlyList<AssistantPresentation> a, IReadOnlyList<AssistantPresentation> b)
+        {
+            var shorter = a.Count < b.Count ? a : b;
+            var longer = a.Count < b.Count ? b : a;
+
+            for (var i = 0; i < shorter.Count; i++)
+            {
+                if (!ReferenceEquals(shorter[i], longer[i]))
+                {
+                    return false;
+                }
+            }
+
+            return shorter.Count > 0;
+        }
+
+        private bool IsOnWorkspace =>
+            Navigation.ToBaseRelativePath(Navigation.Uri).TrimEnd('/')
+                .Equals(AssistantWorkspaceState.Route, StringComparison.OrdinalIgnoreCase);
 
         protected static string RoleClass(TranscriptEntry entry) => entry.Role == TranscriptRole.User
             ? "assistant-message-user"
@@ -142,6 +233,7 @@ namespace DemoReleaseChatPlugin.Website.Components.Shared.Assistant
             if (Session != null)
             {
                 Session.Changed -= OnStateChanged;
+                Workspace.Changed -= OnWorkspaceChanged;
             }
 
             PanelState.Changed -= OnStateChanged;

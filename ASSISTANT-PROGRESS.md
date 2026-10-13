@@ -1,6 +1,6 @@
 # AI Assistant module — build progress and handover
 
-Handover notes for continuing the build in a new chat. Last updated 12/10/2026.
+Handover notes for continuing the build in a new chat. Last updated 13/10/2026.
 
 ## What we're doing
 
@@ -19,12 +19,12 @@ Files 01–10 referenced by the spec are not needed — this codebase already is
 
 **Name mapping:** Zenith → DemoReleaseChatPlugin; the spec's `Core` project → `Application` (+ `Domain`).
 
-Git branch: **`AI-Chatbot`**. Steps 1–8 are committed (latest `ca694d2`). Step 9 (`MarkdownRenderer`,
-panel/CSS/csproj edits) and this file are **not committed yet**.
+Git branch: **`AI-Chatbot`**. Steps 1–9 are committed (latest `c42b796`). Step 10 is **not committed yet**.
 
 ## How the user wants to work
 
-- **Very small steps**, one per turn. For each: explain what it does, make the change, build, test,
+- For Step 10 the user asked for the whole step **in one go** (10a–10d) rather than one sub-step per turn.
+- **Small steps**, one per turn. For each: explain what it does, make the change, build, test,
   then report **what changed** + **how to verify**, and wait for the user before the next step.
 - The user likes plain-language explanations of C# features and of the flow (with examples).
 - Before building a step, describe it and wait for "build it" / "apply the changes".
@@ -81,11 +81,12 @@ panel/CSS/csproj edits) and this file are **not committed yet**.
 | 8a | `AssistantCapabilities`, `ToolExecutor`, `list_projects`, capability-gated registry | Done |
 | 8b | `get_release_history`, `get_latest_release`, release glossary in prompt, starter questions | Done |
 | 9 | `MarkdownRenderer` (Markdig, `DisableHtml()` + unsafe-link/image guard) | Done |
-| **10** | **Workspace page `/assistant/workspace` + Verified table** | **Next** |
+| 10 | Workspace page `/assistant/workspace` + Verified table (details below) | Done |
 
-The user has **not yet confirmed browser checks for Steps 5–9** (the agent can't sign in — Entra login).
+The user has **not yet confirmed browser checks for Steps 5–10** (the agent can't sign in — Entra login).
+Next is **Phase 2** (below).
 
-### Step 10 — what it involves (from spec 13 and 15)
+### Step 10 — as built
 
 - `Canvas/`: `ReportTable` (`From(rows, hiddenFields)` — humanised headers, yyyy-MM-dd → dd/MM/yyyy,
   bools → Yes/No), `AssistantPresentation` (+ payloads), `IWorkspaceDataStore` / `WorkspaceDataStore`
@@ -97,6 +98,17 @@ The user has **not yet confirmed browser checks for Steps 5–9** (the agent can
   registered always as itself + `IAssistantWorkspace`; `AssistantWorkspace` page; auto-open once per
   report (`SameReport` prefix match); `TranscriptEntry.Presentations`; prompt "Presenting results" rules.
 - Verify: "List every project as a table" opens the workspace with a **Verified** table.
+
+Differences from the plan above:
+- `get_latest_release` does **not** stash (one record belongs in the chat); `list_projects` (hides `id`) and
+  `get_release_history` (hides `detail`) do.
+- `PresentationKind` has only `Table` so far; other kinds and payloads arrive with their tools in Phase 2.
+- The per-answer **"Open workspace"** link (`OpenReport` → `Workspace.Display`) was built now, so Phase 2's
+  item is just CSV export + the report banner. Panel **Clear** also clears the workspace.
+- Workspace table is a plain HTML `<table>` (cells encoded by Blazor), not a RadzenDataGrid.
+- First starter prompt changed to "List every project as a table".
+- Tested with the real model + fake `ISender`: projects table → Verified; "add Billing history to that" →
+  2nd Verified table in the same report; a sorted/trimmed table → Unverified, and the model said to check it.
 
 ### Later phases (from the spec, adapted)
 
@@ -155,10 +167,12 @@ and env-var overrides (e.g. `Assistant__Enabled=true`).
 `AssistantUser.cs`, `AssistantCapabilities.cs`, `DependencyInjection.cs` (`AddAssistantCore`),
 `Chat/AssistantChatSession.cs`, `Chat/TranscriptEntry.cs`, `Prompts/SystemPromptBuilder.cs`,
 `Tools/ToolNames.cs`, `Tools/ToolExecutor.cs`, `Tools/SystemTools.cs`, `Tools/ReleaseTools.cs`,
-`Tools/AssistantToolRegistry.cs`.
+`Tools/AssistantToolRegistry.cs`, `Tools/PresentationTools.cs`, `Canvas/ReportTable.cs`, `Canvas/IWorkspaceDataStore.cs`
+(+ `StashRows`), `Canvas/WorkspaceDataStore.cs`, `Canvas/AssistantPresentation.cs`, `Canvas/IAssistantWorkspace.cs`.
 
 **DemoReleaseChatPlugin.Website/**: `Infrastructure/Assistant/AssistantDependencyInjection.cs` (`AddAssistant`),
 `Services/Assistant/AssistantPanelState.cs`, `Services/Assistant/MarkdownRenderer.cs`,
+`Services/Assistant/AssistantWorkspaceState.cs`, `Components/Pages/Assistant/AssistantWorkspace.razor` (+ `Base.cs`),
 `Components/Shared/Assistant/AssistantToggleButton.razor`, `AssistantPanel.razor`, `AssistantPanelBase.cs`,
 `wwwroot/css/assistant.css`, `wwwroot/js/assistant-window.js`. Edited: `Program.cs` (`builder.AddAssistant()`),
 `MainLayout.razor`, `App.razor`, `_Imports.razor`, `appsettings.json`, `.csproj` files, `DemoReleaseChatPlugin.sln`.

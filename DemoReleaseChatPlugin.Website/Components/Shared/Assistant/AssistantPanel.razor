@@ -55,6 +55,14 @@
                         }
                     }
 
+                    @if (entry.Presentations is { Count: > 0 })
+                    {
+                        var report = entry.Presentations;   @* copy for the closure *@
+                        <button type="button" class="assistant-open-report" @onclick="@(() => OpenReport(report))">
+                            <RadzenIcon Icon="table_view" /> Open workspace
+                        </button>
+                    }
+
                     @if (entry.ToolActivities.Count > 0)
                     {
                         <div class="assistant-tool-chips">
