@@ -75,6 +75,56 @@
     font-size: 0.875rem;
 }
 
+/* Rendered Markdown: the HTML supplies the line breaks, so normal wrapping, and compact spacing. */
+.assistant-markdown {
+    white-space: normal;
+}
+
+.assistant-markdown > :first-child {
+    margin-top: 0;
+}
+
+.assistant-markdown > :last-child {
+    margin-bottom: 0;
+}
+
+.assistant-markdown p,
+.assistant-markdown ul,
+.assistant-markdown ol {
+    margin: 0 0 0.5rem;
+}
+
+.assistant-markdown ul,
+.assistant-markdown ol {
+    padding-left: 1.25rem;
+}
+
+.assistant-markdown li > p {
+    margin: 0;
+}
+
+.assistant-markdown code {
+    padding: 0 0.2rem;
+    border-radius: 3px;
+    background: rgba(0, 0, 0, 0.06);
+    font-size: 0.8rem;
+}
+
+.assistant-markdown table {
+    display: block;
+    overflow-x: auto;
+    margin: 0 0 0.5rem;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+}
+
+.assistant-markdown th,
+.assistant-markdown td {
+    padding: 0.2rem 0.4rem;
+    border: 1px solid var(--rz-border-color, #ddd);
+    text-align: left;
+}
+
 .assistant-message-user {
     margin-left: 2rem;
     background: var(--rz-primary-lighter, #e3f2fd);

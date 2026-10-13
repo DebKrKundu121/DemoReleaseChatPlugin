@@ -1,4 +1,5 @@
 @inherits AssistantPanelBase
+@using DemoReleaseChatPlugin.Assistant.Chat
 
 @if (IsEnabled && PanelState.IsOpen && Session != null)
 {
@@ -42,7 +43,16 @@
                     @* A reply still waiting for its first words has no bubble yet — the activity line stands in for it. *@
                     @if (!string.IsNullOrEmpty(entry.Text))
                     {
-                        <div class="assistant-message @RoleClass(entry)">@entry.Text</div>
+                        @if (entry.Role == TranscriptRole.User)
+                        {
+                            @* The user's own typing: plain text, not Markdown. *@
+                            <div class="assistant-message @RoleClass(entry)">@entry.Text</div>
+                        }
+                        else
+                        {
+                            @* MarkupString is only safe because MarkdownRenderer escapes HTML and unsafe links. *@
+                            <div class="assistant-message assistant-markdown @RoleClass(entry)">@((MarkupString)MarkdownRenderer.ToHtml(entry.Text))</div>
+                        }
                     }
 
                     @if (entry.ToolActivities.Count > 0)
